@@ -2,3 +2,4 @@ build/*
 .venv3
 .install
 .pre-commit
+python/command

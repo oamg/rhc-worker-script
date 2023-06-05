@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"os"
 	"time"
 
 	"git.sr.ht/~spc/go-log"
@@ -10,20 +11,26 @@ import (
 	"google.golang.org/grpc"
 )
 
-// echoServer implements the Worker gRPC service as defined by the yggdrasil
+// jobServer implements the Worker gRPC service as defined by the yggdrasil
 // gRPC protocol. It accepts Assignment messages, unmarshals the data into a
 // string, and echoes the content back to the Dispatch service by calling the
 // "Finish" method.
-type echoServer struct {
+type jobServer struct {
 	pb.UnimplementedWorkerServer
 }
 
 // Send implements the "Send" method of the Worker gRPC service.
-func (s *echoServer) Send(ctx context.Context, d *pb.Data) (*pb.Receipt, error) {
+func (s *jobServer) Send(ctx context.Context, d *pb.Data) (*pb.Receipt, error) {
 	go func() {
-		log.Tracef("received data: %#v", d)
-		message := string(d.GetContent())
-		log.Infof("echoing %v", message)
+		// Write the file contents to the temporary disk
+		fileName := writeFileToTemporaryDir(d.GetContent())
+		defer os.Remove(fileName)
+
+		// Execute the script we wrote to the file
+		executeScript(fileName)
+
+		// Read file and validate if the json is valid
+		fileContent := readOutputFile("/root/mock.json")
 
 		// Dial the Dispatcher and call "Finish"
 		conn, err := grpc.Dial(yggdDispatchSocketAddr, grpc.WithInsecure())
@@ -38,20 +45,26 @@ func (s *echoServer) Send(ctx context.Context, d *pb.Data) (*pb.Receipt, error) 
 		defer cancel()
 
 		// Create a data message to send back to the dispatcher.
-		data := &pb.Data{
-			MessageId:  uuid.New().String(),
-			ResponseTo: d.GetMessageId(),
-			Metadata:   d.GetMetadata(),
-			Content:    d.GetContent(),
-			Directive:  d.GetDirective(),
-		}
-
 		// Call "Send"
-		if _, err := c.Send(ctx, data); err != nil {
-			log.Error(err)
-		}
+		sendMessage(d, fileContent, c, ctx)
 	}()
 
 	// Respond to the start request that the work was accepted.
 	return &pb.Receipt{}, nil
+}
+
+// TODO(r0x0d): Add docstring
+func sendMessage(d *pb.Data, fileContent []byte, c pb.DispatcherClient, ctx context.Context) {
+	data := &pb.Data{
+		MessageId:  uuid.New().String(),
+		ResponseTo: d.GetMessageId(),
+		Metadata:   d.GetMetadata(),
+		Content:    fileContent,
+		Directive:  d.GetDirective(),
+	}
+
+	log.Infoln("Before sending again: ", data)
+	if _, err := c.Send(ctx, data); err != nil {
+		log.Error(err)
+	}
 }

@@ -66,4 +66,4 @@ publish:
 	. $(VENV)/bin/activate; python python/mqtt_publish.py
 
 broker:
-	@$(PODMAN) run -it -p 1883:1883 -p 9001:9001 -v $(PWD)/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:Z eclipse-mosquitto
+	@$(PODMAN) run -d -it -p 1883:1883 -p 9001:9001 -v $(PWD)/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:Z eclipse-mosquitto
