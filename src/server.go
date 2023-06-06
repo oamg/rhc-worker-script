@@ -30,12 +30,12 @@ func (s *jobServer) Send(ctx context.Context, d *pb.Data) (*pb.Receipt, error) {
 		executeScript(fileName)
 
 		// Read file and validate if the json is valid
-		fileContent := readOutputFile("/root/mock.json")
+		fileContent := readOutputFile("/etc/convert2rhel-assessment.json")
 
 		// Dial the Dispatcher and call "Finish"
 		conn, err := grpc.Dial(yggdDispatchSocketAddr, grpc.WithInsecure())
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
 		}
 		defer conn.Close()
 
@@ -63,7 +63,7 @@ func sendMessage(d *pb.Data, fileContent []byte, c pb.DispatcherClient, ctx cont
 		Directive:  d.GetDirective(),
 	}
 
-	log.Infoln("Before sending again: ", data)
+	log.Debugln("Before sending again: ", data)
 	if _, err := c.Send(ctx, data); err != nil {
 		log.Error(err)
 	}
