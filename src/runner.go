@@ -12,6 +12,6 @@ func executeScript(fileName string) {
 	cmd := exec.Command("/bin/sh", fileName)
 	log.Debug("Cmd: ", cmd)
 	if err := cmd.Run(); err != nil {
-		log.Fatalln("error: ", err)
+		log.Errorln("error: ", err)
 	}
 }

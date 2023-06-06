@@ -15,14 +15,14 @@ func setupLogger() *os.File {
 	// Check if path exists, if not, create it.
 	if _, err := os.Stat(logFolder); err != nil {
 		if err := os.Mkdir(logFolder, os.ModePerm); err != nil {
-			log.Fatal(err)
+			log.Error(err)
 		}
 	}
 
 	// open log file
 	logFile, err := os.Create(path.Join(logFolder, fileName))
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 
 	yggdLogLevel, ok := os.LookupEnv("YGG_LOG_LEVEL")

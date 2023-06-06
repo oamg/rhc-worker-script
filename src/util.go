@@ -14,31 +14,32 @@ func writeFileToTemporaryDir(data []byte) string {
 	// Check if path exists, if not, create it.
 	if _, err := os.Stat(temporaryConvert2RHELDir); err != nil {
 		if err := os.Mkdir(temporaryConvert2RHELDir, os.ModePerm); err != nil {
-			log.Fatal(err)
+			log.Errorln(err)
 		}
 	}
 
 	file, err := os.CreateTemp(temporaryConvert2RHELDir, "c2r-worker-")
 	if err != nil {
-		log.Fatal(err)
+		log.Errorln(err)
 	}
 
 	if _, err := file.Write(data); err != nil {
-		log.Fatal(err)
+		log.Errorln(err)
 	}
 
 	fileName := file.Name()
 	file.Close()
 	return fileName
 }
+
 func readOutputFile(filePath string) []byte {
 	output, err := ioutil.ReadFile(filePath)
 	if err != nil {
-		log.Fatalln("Couldn't read file")
+		log.Errorln("Couldn't read file")
 	}
 
 	if err := json.Valid(output); !err {
-		log.Fatalln("Can't unmarshal contents of file.")
+		log.Errorln("Can't unmarshal contents of file.")
 	}
 
 	return output
