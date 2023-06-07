@@ -1,4 +1,4 @@
-module github.com/r0x0d/convert2rhel-worker
+module github.com/r0x0d/rhc-bash-worker
 
 go 1.20
 

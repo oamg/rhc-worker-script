@@ -24,7 +24,7 @@ jobs:
         with:
             platforms: 'linux/amd64'
             package: 'src'
-            name: 'convert2rhel-worker-${{ steps.tagName.outputs.tag }}'
+            name: 'rhc-bash-worker-${{ steps.tagName.outputs.tag }}'
             compress: 'true'
             dest: 'dist'
 

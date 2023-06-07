@@ -2,23 +2,22 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
 
 	"git.sr.ht/~spc/go-log"
 )
 
-const temporaryConvert2RHELDir string = "/var/lib/convert2rhel"
-
 func writeFileToTemporaryDir(data []byte) string {
+	const temporaryWorkerDirectory string = "/var/lib/rhc-bash-worker"
+
 	// Check if path exists, if not, create it.
-	if _, err := os.Stat(temporaryConvert2RHELDir); err != nil {
-		if err := os.Mkdir(temporaryConvert2RHELDir, os.ModePerm); err != nil {
+	if _, err := os.Stat(temporaryWorkerDirectory); err != nil {
+		if err := os.Mkdir(temporaryWorkerDirectory, os.ModePerm); err != nil {
 			log.Errorln(err)
 		}
 	}
 
-	file, err := os.CreateTemp(temporaryConvert2RHELDir, "c2r-worker-")
+	file, err := os.CreateTemp(temporaryWorkerDirectory, "c2r-worker-")
 	if err != nil {
 		log.Errorln(err)
 	}
@@ -33,7 +32,7 @@ func writeFileToTemporaryDir(data []byte) string {
 }
 
 func readOutputFile(filePath string) []byte {
-	output, err := ioutil.ReadFile(filePath)
+	output, err := os.ReadFile(filePath)
 	if err != nil {
 		log.Errorln("Couldn't read file")
 	}
