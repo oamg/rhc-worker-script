@@ -29,7 +29,7 @@ def get_ip_address():
   return host_ip
 
 # This is changed everytime you refresh the box and register the machine again.
-CLIENT_ID = "a6f2bdbe-8b3b-49ee-b4cd-bc150a7809c6"
+CLIENT_ID = "a723a681-6e49-4660-a07a-56359a515675"
 BROKER = '127.0.0.1'
 BROKER_PORT = 1883
 TOPIC = f"yggdrasil/{CLIENT_ID}/data/in"
@@ -41,7 +41,7 @@ MESSAGE = {
   # "client_uuid": CLIENT_ID,
   "version": 1,
   "sent": "2021-01-12T14:58:13+00:00", # str(datetime.datetime.now().isoformat()),
-  "directive": 'convert2rhel',
+  "directive": 'rhc-bash-worker',
   "content": f'http://{get_ip_address()}:8000/python/command',
   "metadata": {
     "return_url": 'http://raw.example.com/return'

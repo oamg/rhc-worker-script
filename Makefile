@@ -9,7 +9,7 @@
 
 # Project constants
 VERSION ?= 0.1
-PKGNAME ?= convert2rhel-worker
+PKGNAME ?= rhc-bash-worker
 GO_SOURCES := $(wildcard src/*.go)
 PYTHON ?= python3
 PIP ?= pip3

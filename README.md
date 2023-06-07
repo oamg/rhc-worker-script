@@ -1,3 +1,3 @@
-# Convert2RHEL Worker
+# RHC Bash Worker
 
-Experimental worker built for Convert2RHEL integration with Insights.
+Experimental worker built for Conversions & Migrations integration with Insights.

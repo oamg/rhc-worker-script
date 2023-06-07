@@ -38,8 +38,8 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	// Register as a handler of the "convert2rhel" type.
-	r, err := c.Register(ctx, &pb.RegistrationRequest{Handler: "convert2rhel", Pid: int64(os.Getpid()), DetachedContent: true})
+	// Register as a handler of the "rhc-bash-worker" type.
+	r, err := c.Register(ctx, &pb.RegistrationRequest{Handler: "rhc-bash-worker", Pid: int64(os.Getpid()), DetachedContent: true})
 	if err != nil {
 		log.Fatal(err)
 	}
