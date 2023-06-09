@@ -22,15 +22,19 @@ type jobServer struct {
 // Send implements the "Send" method of the Worker gRPC service.
 func (s *jobServer) Send(ctx context.Context, d *pb.Data) (*pb.Receipt, error) {
 	go func() {
+		log.Infoln("Writing temporary bash script.")
 		// Write the file contents to the temporary disk
 		fileName := writeFileToTemporaryDir(d.GetContent())
 		defer os.Remove(fileName)
 
+		log.Infoln("Executing bash script located at: ", fileName)
 		// Execute the script we wrote to the file
 		executeScript(fileName)
 
 		// Read file and validate if the json is valid
-		fileContent := readOutputFile("/etc/convert2rhel-assessment.json")
+		reportFile := d.GetMetadata()["report_file"]
+		log.Infoln("Reading output file at: ", reportFile)
+		fileContent := readOutputFile(reportFile)
 
 		// Dial the Dispatcher and call "Finish"
 		conn, err := grpc.Dial(yggdDispatchSocketAddr, grpc.WithInsecure())
@@ -46,25 +50,20 @@ func (s *jobServer) Send(ctx context.Context, d *pb.Data) (*pb.Receipt, error) {
 
 		// Create a data message to send back to the dispatcher.
 		// Call "Send"
-		sendMessage(d, fileContent, c, ctx)
+		log.Infof("Sending message to %s", d.GetMessageId())
+		data := &pb.Data{
+			MessageId:  uuid.New().String(),
+			ResponseTo: d.GetMessageId(),
+			Metadata:   d.GetMetadata(),
+			Content:    fileContent,
+			Directive:  d.GetMetadata()["return_url"],
+		}
+
+		if _, err := c.Send(ctx, data); err != nil {
+			log.Error(err)
+		}
 	}()
 
 	// Respond to the start request that the work was accepted.
 	return &pb.Receipt{}, nil
-}
-
-// TODO(r0x0d): Add docstring
-func sendMessage(d *pb.Data, fileContent []byte, c pb.DispatcherClient, ctx context.Context) {
-	data := &pb.Data{
-		MessageId:  uuid.New().String(),
-		ResponseTo: d.GetMessageId(),
-		Metadata:   d.GetMetadata(),
-		Content:    fileContent,
-		Directive:  d.GetDirective(),
-	}
-
-	log.Debugln("Before sending again: ", data)
-	if _, err := c.Send(ctx, data); err != nil {
-		log.Error(err)
-	}
 }
