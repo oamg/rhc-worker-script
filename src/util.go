@@ -7,23 +7,23 @@ import (
 	"git.sr.ht/~spc/go-log"
 )
 
-func writeFileToTemporaryDir(data []byte) string {
-	const temporaryWorkerDirectory string = "/var/lib/rhc-bash-worker"
+const temporaryWorkerDirectory string = "/var/lib/rhc-bash-worker"
 
+func writeFileToTemporaryDir(data []byte) string {
 	// Check if path exists, if not, create it.
 	if _, err := os.Stat(temporaryWorkerDirectory); err != nil {
 		if err := os.Mkdir(temporaryWorkerDirectory, os.ModePerm); err != nil {
-			log.Errorln(err)
+			log.Errorln("Failed to create temporary directory: ", err)
 		}
 	}
 
 	file, err := os.CreateTemp(temporaryWorkerDirectory, "c2r-worker-")
 	if err != nil {
-		log.Errorln(err)
+		log.Errorln("Failed to create temporary file: ", err)
 	}
 
 	if _, err := file.Write(data); err != nil {
-		log.Errorln(err)
+		log.Errorln("Failed to write content to temporary file: ", err)
 	}
 
 	fileName := file.Name()
@@ -34,11 +34,11 @@ func writeFileToTemporaryDir(data []byte) string {
 func readOutputFile(filePath string) []byte {
 	output, err := os.ReadFile(filePath)
 	if err != nil {
-		log.Errorln("Couldn't read file")
+		log.Errorln("Failed to read output file: ", err)
 	}
 
 	if err := json.Valid(output); !err {
-		log.Errorln("Can't unmarshal contents of file.")
+		log.Errorln("JSON content is not valid.")
 	}
 
 	return output
