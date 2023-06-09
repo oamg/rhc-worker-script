@@ -1,13 +1,46 @@
 linters-settings:
-  gofmt:
-    # Simplify code: gofmt with `-s` option.
-    # Default: true
-    simplify: false
-    # Apply the rewrite rules to the source before reformatting.
-    # https://pkg.go.dev/cmd/gofmt
-    # Default: []
-    rewrite-rules:
-      - pattern: "interface{}"
-        replacement: "any"
-      - pattern: "a[b:len(a)]"
-        replacement: "a[b:]"
+  revive:
+    rules:
+      - name: blank-imports
+      - name: dot-imports
+      - name: empty-block
+      - name: error-naming
+      - name: error-return
+      - name: error-strings
+      - name: errorf
+      - name: exported
+      - name: if-return
+      - name: increment-decrement
+      - name: indent-error-flow
+      - name: package-comments
+      - name: range
+      - name: receiver-naming
+      - name: redefines-builtin-id
+      - name: superfluous-else
+      - name: time-naming
+      - name: unexported-return
+      - name: unreachable-code
+      - name: unused-parameter
+      - name: var-declaration
+      - name: var-naming
+
+linters:
+  enable:
+    - errcheck
+    - errorlint
+    - gofmt
+    - goimports
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - nilerr
+    - revive
+    - typecheck
+    - unconvert
+    - unparam
+    - unused
+    - wastedassign
+  disable-all: true
+run:
+  timeout: 5m
