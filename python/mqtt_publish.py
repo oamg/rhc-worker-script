@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import os
 import socket
 import sys
 import time
@@ -49,15 +50,26 @@ MESSAGE = {
   }
 }
 
-process = multiprocessing.Process(target=start_server, args=('0.0.0.0', 8000))
-process.start()
 
-print("Sleeping for 1 second to wait for the server")
-time.sleep(1)
+def main():
+  if not os.path.exists("python/command"):
+    print("You must create a python/command file in order to continue.")
+    sys.exit(1)
 
-client = mqtt.Client()
-client.connect(BROKER, BROKER_PORT, 60)
-client.publish(TOPIC, json.dumps(MESSAGE), 1, False)
-print("Published message to MQTT, serving content.")
+  process = multiprocessing.Process(target=start_server, args=('0.0.0.0', 8000))
+  process.start()
 
-process.join()
+  print("Sleeping for 1 second to wait for the server")
+  time.sleep(1)
+
+  client = mqtt.Client()
+  client.connect(BROKER, BROKER_PORT, 60)
+  client.publish(TOPIC, json.dumps(MESSAGE), 1, False)
+  print("Published message to MQTT, serving content.")
+
+  process.join()
+
+
+
+if __name__ == "__main__":
+   main()
