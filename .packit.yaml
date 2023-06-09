@@ -1,14 +1,14 @@
 specfile_path: packaging/rhc-bash-worker.spec
 upstream_package_name: rhc-bash-worker
 downstream_package_name: rhc-bash-worker
-upstream_project_url: https://github.com/r0x0d/rhc-bash-worker
+upstream_project_url: https://github.com/oamg/rhc-bash-worker
 
 srpm_build_deps: []
 
 jobs:
 - job: copr_build
   trigger: pull_request
-  owner: "@r0x0d"
+  owner: "@oamg"
   project: rhc-bash-worker
   targets:
   - epel-7-x86_64
@@ -16,10 +16,11 @@ jobs:
     # do not get the version from a tag (git describe) but from the spec file
     get-current-version:
     - grep -oP '^Version:\s+\K\S+' packaging/rhc-bash-worker.spec
+
 - job: copr_build
   trigger: commit
   branch: main
-  owner: "@r0x0d"
+  owner: "@oamg"
   project: rhc-bash-worker
   targets:
   - epel-7-x86_64
