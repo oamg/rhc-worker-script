@@ -15,7 +15,7 @@ Version:        v0.1
 Release:        1%{?dist}
 Summary:        Experimental worker for Convert2RHEL.
 
-License:        # FIXME
+License:        GPLv3+
 URL:            %{gourl}
 Source:         %(gosource)
 BuildArch:      noarch
