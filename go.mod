@@ -1,6 +1,6 @@
 module github.com/oamg/rhc-bash-worker
 
-go 1.16
+go 1.20
 
 require (
 	git.sr.ht/~spc/go-log v0.0.0-20220407193148-15b04da8a6c5
