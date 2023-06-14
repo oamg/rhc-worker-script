@@ -30,7 +30,7 @@ def get_ip_address():
   return host_ip
 
 # This is changed everytime you refresh the box and register the machine again.
-CLIENT_ID = "0ac9aab0-9a4a-4687-bd5d-f613fe1e5dab"
+CLIENT_ID = "22e7b41c-944c-4778-81cf-facb6444d1a0"
 BROKER = '127.0.0.1'
 BROKER_PORT = 1883
 TOPIC = f"yggdrasil/{CLIENT_ID}/data/in"

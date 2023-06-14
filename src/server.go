@@ -50,13 +50,24 @@ func (s *jobServer) Send(ctx context.Context, d *pb.Data) (*pb.Receipt, error) {
 
 		// Create a data message to send back to the dispatcher.
 		// Call "Send"
-		log.Infof("Sending message to %s", d.GetMessageId())
-		data := &pb.Data{
-			MessageId:  uuid.New().String(),
-			ResponseTo: d.GetMessageId(),
-			Metadata:   d.GetMetadata(),
-			Content:    fileContent,
-			Directive:  d.GetMetadata()["return_url"],
+		var data *pb.Data
+
+		if fileContent != nil {
+			log.Infof("Sending message to %s", d.GetMessageId())
+			data = &pb.Data{
+				MessageId:  uuid.New().String(),
+				ResponseTo: d.GetMessageId(),
+				Metadata:   d.GetMetadata(),
+				Content:    fileContent,
+				Directive:  d.GetMetadata()["return_url"],
+			}
+		} else {
+			data = &pb.Data{
+				MessageId:  uuid.New().String(),
+				ResponseTo: d.GetMessageId(),
+				Metadata:   d.GetMetadata(),
+				Directive:  d.GetDirective(),
+			}
 		}
 
 		if _, err := c.Send(ctx, data); err != nil {
