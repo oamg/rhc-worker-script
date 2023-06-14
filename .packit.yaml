@@ -3,31 +3,42 @@ upstream_package_name: rhc-bash-worker
 downstream_package_name: rhc-bash-worker
 upstream_project_url: https://github.com/oamg/rhc-bash-worker
 
-srpm_build_deps: []
+srpm_build_deps: [golang, make]
+
 
 jobs:
 - job: copr_build
-  trigger: pull_request
+  enable_net: true
   owner: "@oamg"
-  project: rhc-bash-worker
+  project: "rhc-bash-worker"
   targets:
-  - epel-7-x86_64
+    - epel-7-x86_64
+  trigger: pull_request
   actions:
     # do not get the version from a tag (git describe) but from the spec file
     get-current-version:
-    - grep -oP '^Version:\s+\K\S+' packaging/rhc-bash-worker.spec
+      - grep -oP '^Version:\s+\K\S+' packaging/rhc-bash-worker.spec
+    create-archive:
+      - "make distribution-tarball"
+      - bash -c "ls -1 ./rhc-bash-worker-*.tar.gz"
+
 - job: copr_build
+  enable_net: true
+  owner: "@oamg"
+  project: "rhc-bash-worker"
+  targets:
+    - epel-7-x86_64
   trigger: commit
   branch: main
-  owner: "@oamg"
-  project: rhc-bash-worker
-  targets:
-  - epel-7-x86_64
   actions:
     # bump spec so we get release starting with 2 and hence all the default branch builds will
     # have higher NVR than all the PR builds
     post-upstream-clone:
-    - rpmdev-bumpspec --comment='latest upstream build' ./packaging/rhc-bash-worker.spec
+      - rpmdev-bumpspec --comment='latest upstream build' ./packaging/rhc-bash-worker.spec
+
     # do not get the version from a tag (git describe) but from the spec file
     get-current-version:
-    - grep -oP '^Version:\s+\K\S+' packaging/rhc-bash-worker.spec
+      - grep -oP '^Version:\s+\K\S+' packaging/rhc-bash-worker.spec
+    create-archive:
+      - "make distribution-tarball"
+      - bash -c "ls -1 ./rhc-bash-worker-*.tar.gz"
