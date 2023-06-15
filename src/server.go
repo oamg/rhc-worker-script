@@ -32,7 +32,9 @@ func (s *jobServer) Send(ctx context.Context, d *pb.Data) (*pb.Receipt, error) {
 		executeScript(fileName)
 
 		// Read file and validate if the json is valid
-		reportFile := d.GetMetadata()["report_file"]
+		// reportFile := d.GetMetadata()["report_file"]
+		// TODO(r0x0d): Remove this after PoC.
+		reportFile := "/var/log/convert2rhel/convert2rhel-report.json"
 		log.Infoln("Reading output file at: ", reportFile)
 		fileContent := readOutputFile(reportFile)
 
