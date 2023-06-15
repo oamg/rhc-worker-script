@@ -17,7 +17,7 @@ func writeFileToTemporaryDir(data []byte) string {
 		}
 	}
 
-	file, err := os.CreateTemp(temporaryWorkerDirectory, "c2r-worker-")
+	file, err := os.CreateTemp(temporaryWorkerDirectory, "rhc-bash-worker-")
 	if err != nil {
 		log.Errorln("Failed to create temporary file: ", err)
 	}
@@ -35,10 +35,12 @@ func readOutputFile(filePath string) []byte {
 	output, err := os.ReadFile(filePath)
 	if err != nil {
 		log.Errorln("Failed to read output file: ", err)
+		return nil
 	}
 
 	if err := json.Valid(output); !err {
 		log.Errorln("JSON content is not valid.")
+		return nil
 	}
 
 	return output

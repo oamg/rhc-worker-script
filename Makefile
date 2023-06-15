@@ -31,7 +31,7 @@ install: .install .pre-commit
 .install:
 	virtualenv --system-site-packages --python $(PYTHON) $(VENV); \
 	. $(VENV)/bin/activate; \
-	$(PIP) install --upgrade -r ./scripts/requirements.txt; \
+	$(PIP) install --upgrade -r ./python/requirements.txt; \
 	touch $@
 
 .pre-commit:
@@ -39,7 +39,7 @@ install: .install .pre-commit
 	touch $@
 
 clean:
-	@rm -rf build
+	rm -rf build
 
 build: $(GO_SOURCES)
 	mkdir -p build
