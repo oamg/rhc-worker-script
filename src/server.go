@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"time"
 
@@ -36,7 +37,7 @@ func (s *jobServer) Send(ctx context.Context, d *pb.Data) (*pb.Receipt, error) {
 		// TODO(r0x0d): Remove this after PoC.
 		reportFile := "/var/log/convert2rhel/convert2rhel-report.json"
 		log.Infoln("Reading output file at: ", reportFile)
-		fileContent := readOutputFile(reportFile)
+		fileContent, boundary := readOutputFile(reportFile)
 
 		// Dial the Dispatcher and call "Finish"
 		conn, err := grpc.Dial(yggdDispatchSocketAddr, grpc.WithInsecure())
@@ -54,14 +55,17 @@ func (s *jobServer) Send(ctx context.Context, d *pb.Data) (*pb.Receipt, error) {
 		// Call "Send"
 		var data *pb.Data
 
+		log.Infof("Sending message to %s", d.GetMessageId())
 		if fileContent != nil {
-			log.Infof("Sending message to %s", d.GetMessageId())
+			contentType := fmt.Sprintf("multipart/form-data; boundary=%s", boundary)
 			data = &pb.Data{
 				MessageId:  uuid.New().String(),
 				ResponseTo: d.GetMessageId(),
-				Metadata:   d.GetMetadata(),
-				Content:    fileContent,
-				Directive:  d.GetMetadata()["return_url"],
+				Metadata: map[string]string{
+					"Content-Type": contentType,
+				},
+				Content:   fileContent.Bytes(),
+				Directive: d.GetMetadata()["return_url"],
 			}
 		} else {
 			data = &pb.Data{
@@ -72,6 +76,7 @@ func (s *jobServer) Send(ctx context.Context, d *pb.Data) (*pb.Receipt, error) {
 			}
 		}
 
+		log.Infoln("pb.Data message: ", data)
 		if _, err := c.Send(ctx, data); err != nil {
 			log.Error(err)
 		}
