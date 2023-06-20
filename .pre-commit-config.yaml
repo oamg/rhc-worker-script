@@ -3,7 +3,7 @@ exclude: ^(mosquitto/mosquitto.conf)
 
 repos:
   - repo: "https://github.com/golangci/golangci-lint"
-    rev: "v1.52.2"
+    rev: "v1.53.3"
     hooks:
       - id: golangci-lint
 
@@ -15,7 +15,7 @@ repos:
       - id: "check-merge-conflict"
 
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.16.3
+    rev: v8.17.0
     hooks:
       - id: gitleaks
         stages: [manual, push]
