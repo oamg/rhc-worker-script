@@ -39,11 +39,11 @@ func readOutputFile(filePath string) (*bytes.Buffer, string) {
 	fmt.Println("Reading file at:", filePath)
 	file, err := os.Open(filePath)
 	if err != nil {
-		fmt.Println("Failed to read output file: ", err)
+		log.Infoln("Failed to read output file: ", err)
 		return nil, ""
 	}
 
-	fmt.Println("Writing form-data for file: ", filePath)
+	log.Infoln("Writing form-data for file: ", filePath)
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 
@@ -52,15 +52,15 @@ func readOutputFile(filePath string) (*bytes.Buffer, string) {
 	h.Set("Content-Type", "application/vnd.redhat.tasks.filename+tgz")
 	part, err := writer.CreatePart(h)
 	if err != nil {
-		fmt.Println("Couldn't create form-file: ", err)
+		log.Errorln("Couldn't create form-file: ", err)
 	}
 	_, err = io.Copy(part, file)
 	if err != nil {
-		fmt.Println("Failed to copy contents to file: ", err)
+		log.Errorln("Failed to copy contents to file: ", err)
 	}
 
 	writer.Close()
 
-	fmt.Println("form-data created, returning body: ", body)
+	log.Infoln("form-data created, returning body: ", body)
 	return body, writer.Boundary()
 }
