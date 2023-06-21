@@ -8,8 +8,8 @@ import (
 	"git.sr.ht/~spc/go-log"
 )
 
-const logFolder string = "/var/log/rhc-bash-worker"
-const fileName string = "rhc-bash-worker.log"
+const logFolder string = "/var/log/rhc-worker-bash"
+const fileName string = "rhc-worker-bash.log"
 
 func setupLogger() *os.File {
 	// Check if path exists, if not, create it.

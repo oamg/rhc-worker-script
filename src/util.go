@@ -1,17 +1,13 @@
 package main
 
 import (
-	"bytes"
-	"fmt"
-	"io"
-	"mime/multipart"
-	"net/textproto"
+	"encoding/json"
 	"os"
 
 	"git.sr.ht/~spc/go-log"
 )
 
-const temporaryWorkerDirectory string = "/var/lib/rhc-bash-worker"
+const temporaryWorkerDirectory string = "/var/lib/rhc-worker-bash"
 
 func writeFileToTemporaryDir(data []byte) string {
 	// Check if path exists, if not, create it.
@@ -21,7 +17,7 @@ func writeFileToTemporaryDir(data []byte) string {
 		}
 	}
 
-	file, err := os.CreateTemp(temporaryWorkerDirectory, "rhc-bash-worker-")
+	file, err := os.CreateTemp(temporaryWorkerDirectory, "rhc-worker-bash-")
 	if err != nil {
 		log.Errorln("Failed to create temporary file: ", err)
 	}
@@ -35,32 +31,17 @@ func writeFileToTemporaryDir(data []byte) string {
 	return fileName
 }
 
-func readOutputFile(filePath string) (*bytes.Buffer, string) {
-	fmt.Println("Reading file at:", filePath)
-	file, err := os.Open(filePath)
+func readOutputFile(filePath string) []byte {
+	output, err := os.ReadFile(filePath)
 	if err != nil {
-		log.Infoln("Failed to read output file: ", err)
-		return nil, ""
+		log.Errorln("Failed to read output file: ", err)
+		return nil
 	}
 
-	log.Infoln("Writing form-data for file: ", filePath)
-	body := &bytes.Buffer{}
-	writer := multipart.NewWriter(body)
-
-	h := make(textproto.MIMEHeader)
-	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`, "file", "convert2rhel-report.json.tar.gz"))
-	h.Set("Content-Type", "application/vnd.redhat.tasks.filename+tgz")
-	part, err := writer.CreatePart(h)
-	if err != nil {
-		log.Errorln("Couldn't create form-file: ", err)
-	}
-	_, err = io.Copy(part, file)
-	if err != nil {
-		log.Errorln("Failed to copy contents to file: ", err)
+	if err := json.Valid(output); !err {
+		log.Errorln("JSON content is not valid.")
+		return nil
 	}
 
-	writer.Close()
-
-	log.Infoln("form-data created, returning body: ", body)
-	return body, writer.Boundary()
+	return output
 }

@@ -9,7 +9,7 @@
 
 # Project constants
 VERSION ?= 0.1
-PKGNAME ?= rhc-bash-worker
+PKGNAME ?= rhc-worker-bash
 GO_SOURCES := $(wildcard src/*.go)
 PYTHON ?= python3
 PIP ?= pip3
@@ -43,7 +43,7 @@ clean:
 
 build: $(GO_SOURCES)
 	mkdir -p build
-	CGO_ENABLED=0 go build -o build/$(PKGNAME) $^
+	CGO_ENABLED=0 go build -o build/rhc-bash-worker $^
 
 distribution-tarball:
 	go mod vendor

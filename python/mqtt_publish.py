@@ -1,31 +1,25 @@
 #!/usr/bin/env python3
 import json
-import multiprocessing
 import os
 import socket
 import sys
 import time
 import uuid
-import flask
+from http import server
 import paho.mqtt.client as mqtt
+import multiprocessing
 
-def start_server():
-  app = flask.Flask(__name__)
+class CustomHandler(server.SimpleHTTPRequestHandler):
+  def __init__(self, request, client_address, server, *, directory = None):
+     super().__init__(request, client_address, server, directory=directory)
 
-  @app.get("/command")
-  def command():
-    with open("python/command") as handler:
-      return handler.read()
+  def handle_one_request(self):
+      super().handle_one_request()
+      sys.exit(0)
 
-  @app.post("/upload")
-  def upload():
-    print(flask.request)
-    file = flask.request.get('file')
-    file.save(file.filename)
-    print(flask.request.files.get('file'))
-    return 'hi'
-
-  app.run(host="0.0.0.0", port=8000)
+def start_server(host, port):
+  httpd = server.HTTPServer((host, port), CustomHandler)
+  httpd.serve_forever()
 
 def get_ip_address():
   host_ip = ""
@@ -36,11 +30,10 @@ def get_ip_address():
   return host_ip
 
 # This is changed everytime you refresh the box and register the machine again.
-CLIENT_ID = "d0bf7de7-c5c3-43c5-8094-d9f327129cdc"
+CLIENT_ID = "22e7b41c-944c-4778-81cf-facb6444d1a0"
 BROKER = '127.0.0.1'
 BROKER_PORT = 1883
 TOPIC = f"yggdrasil/{CLIENT_ID}/data/in"
-IP_ADDRESS = get_ip_address()
 
 MESSAGE = {
   "type": "data",
@@ -49,11 +42,11 @@ MESSAGE = {
   # "client_uuid": CLIENT_ID,
   "version": 1,
   "sent": "2021-01-12T14:58:13+00:00", # str(datetime.datetime.now().isoformat()),
-  "directive": 'rhc-bash-worker',
-  "content": f'http://{IP_ADDRESS}:8000/command',
+  "directive": 'rhc-worker-bash',
+  "content": f'http://{get_ip_address()}:8000/python/command',
   "metadata": {
     "report_file": "/var/log/convert2rhel/convert2rhel-report.json",
-    "return_url": f'http://{IP_ADDRESS}:8000/upload',
+    "return_url": 'http://raw.example.com/return'
   }
 }
 
@@ -63,7 +56,7 @@ def main():
     print("You must create a python/command file in order to continue.")
     sys.exit(1)
 
-  process = multiprocessing.Process(target=start_server, args=())
+  process = multiprocessing.Process(target=start_server, args=('0.0.0.0', 8000))
   process.start()
 
   print("Sleeping for 1 second to wait for the server")
