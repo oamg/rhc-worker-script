@@ -42,7 +42,7 @@ MESSAGE = {
   # "client_uuid": CLIENT_ID,
   "version": 1,
   "sent": "2021-01-12T14:58:13+00:00", # str(datetime.datetime.now().isoformat()),
-  "directive": 'rhc-bash-worker',
+  "directive": 'rhc-worker-bash',
   "content": f'http://{get_ip_address()}:8000/python/command',
   "metadata": {
     "report_file": "/var/log/convert2rhel/convert2rhel-report.json",

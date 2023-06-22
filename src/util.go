@@ -7,7 +7,7 @@ import (
 	"git.sr.ht/~spc/go-log"
 )
 
-const temporaryWorkerDirectory string = "/var/lib/rhc-bash-worker"
+const temporaryWorkerDirectory string = "/var/lib/rhc-worker-bash"
 
 func writeFileToTemporaryDir(data []byte) string {
 	// Check if path exists, if not, create it.
@@ -17,7 +17,7 @@ func writeFileToTemporaryDir(data []byte) string {
 		}
 	}
 
-	file, err := os.CreateTemp(temporaryWorkerDirectory, "rhc-bash-worker-")
+	file, err := os.CreateTemp(temporaryWorkerDirectory, "rhc-worker-bash-")
 	if err != nil {
 		log.Errorln("Failed to create temporary file: ", err)
 	}
