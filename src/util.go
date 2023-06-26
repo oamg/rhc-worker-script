@@ -1,7 +1,11 @@
 package main
 
 import (
-	"encoding/json"
+	"bytes"
+	"fmt"
+	"io"
+	"mime/multipart"
+	"net/textproto"
 	"os"
 
 	"git.sr.ht/~spc/go-log"
@@ -31,17 +35,32 @@ func writeFileToTemporaryDir(data []byte) string {
 	return fileName
 }
 
-func readOutputFile(filePath string) []byte {
-	output, err := os.ReadFile(filePath)
+func readOutputFile(filePath string) (*bytes.Buffer, string) {
+	log.Infoln("Reading file at:", filePath)
+	file, err := os.Open(filePath)
 	if err != nil {
-		log.Errorln("Failed to read output file: ", err)
-		return nil
+		log.Infoln("Failed to read output file: ", err)
+		return nil, ""
 	}
 
-	if err := json.Valid(output); !err {
-		log.Errorln("JSON content is not valid.")
-		return nil
+	log.Infoln("Writing form-data for file: ", filePath)
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	h := make(textproto.MIMEHeader)
+	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`, "file", "convert2rhel-report.json.tar.gz"))
+	h.Set("Content-Type", "application/vnd.redhat.tasks.filename+tgz")
+	part, err := writer.CreatePart(h)
+	if err != nil {
+		log.Errorln("Couldn't create form-file: ", err)
+	}
+	_, err = io.Copy(part, file)
+	if err != nil {
+		log.Errorln("Failed to copy contents to file: ", err)
 	}
 
-	return output
+	writer.Close()
+
+	log.Infoln("form-data created, returning body: ", body)
+	return body, writer.Boundary()
 }
