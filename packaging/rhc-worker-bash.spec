@@ -20,7 +20,7 @@
 Name:           %{repo_name}
 Version:        0.1
 Release:        1%{?dist}
-Summary:        Experimental worker for Convert2RHEL.
+Summary:        Remote Host Configuration (rhc) worker for executing bash scripts on hosts managed by Red Hat Insights.
 
 License:        GPLv3+
 URL:            https://github.com/%{repo_orgname}/%{repo_name}/
@@ -31,7 +31,7 @@ BuildRequires:  golang
 Requires:       rhc
 
 %description
-Experimental worker for Convert2RHEL.
+Remote Host Configuration (rhc) worker for executing bash scripts on hosts managed by Red Hat Insights.
 
 %prep
 %setup -q

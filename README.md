@@ -1,6 +1,7 @@
 # RHC Bash Worker
 
-Experimental worker built for Conversions & Migrations integration with Insights.
+Remote Host Configuration (rhc) worker for executing bash scripts on hosts
+managed by Red Hat Insights.
 
 ## Getting started
 
