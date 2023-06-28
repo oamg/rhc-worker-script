@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"time"
 
@@ -31,12 +32,13 @@ func (s *jobServer) Send(ctx context.Context, d *pb.Data) (*pb.Receipt, error) {
 		// Execute the script we wrote to the file
 		executeScript(fileName)
 
-		// Read file and validate if the json is valid
-		// reportFile := d.GetMetadata()["report_file"]
-		// TODO(r0x0d): Remove this after PoC.
+		// TODO(r0x0d): Remove this after PoC. We will be reading the output
+		// that comes from the executeScript function, as we want what is in
+		// the stdout to make it more generic, instead of relying on reading an
+		// output file in the system. https://issues.redhat.com/browse/HMS-2005
 		reportFile := "/var/log/convert2rhel/convert2rhel-report.json"
 		log.Infoln("Reading output file at: ", reportFile)
-		fileContent := readOutputFile(reportFile)
+		fileContent, boundary := readOutputFile(reportFile)
 
 		// Dial the Dispatcher and call "Finish"
 		conn, err := grpc.Dial(yggdDispatchSocketAddr, grpc.WithInsecure())
@@ -53,15 +55,18 @@ func (s *jobServer) Send(ctx context.Context, d *pb.Data) (*pb.Receipt, error) {
 		// Create a data message to send back to the dispatcher.
 		// Call "Send"
 		var data *pb.Data
-
+		log.Infof("Sending message to %s", d.GetMessageId())
 		if fileContent != nil {
+			contentType := fmt.Sprintf("multipart/form-data; boundary=%s", boundary)
 			log.Infof("Sending message to %s", d.GetMessageId())
 			data = &pb.Data{
 				MessageId:  uuid.New().String(),
 				ResponseTo: d.GetMessageId(),
-				Metadata:   d.GetMetadata(),
-				Content:    fileContent,
-				Directive:  d.GetMetadata()["return_url"],
+				Metadata: map[string]string{
+					"Content-Type": contentType,
+				},
+				Content:   fileContent.Bytes(),
+				Directive: d.GetMetadata()["return_url"],
 			}
 		} else {
 			data = &pb.Data{
@@ -72,6 +77,7 @@ func (s *jobServer) Send(ctx context.Context, d *pb.Data) (*pb.Receipt, error) {
 			}
 		}
 
+		log.Infoln("pb.Data message: ", data)
 		if _, err := c.Send(ctx, data); err != nil {
 			log.Error(err)
 		}
