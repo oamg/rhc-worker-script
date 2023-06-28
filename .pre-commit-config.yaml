@@ -1,5 +1,5 @@
 minimum_pre_commit_version: "2.9.0"
-exclude: ^(mosquitto/mosquitto.conf)
+exclude: ^(development/mosquitto/mosquitto.conf)
 
 repos:
   - repo: "https://github.com/golangci/golangci-lint"

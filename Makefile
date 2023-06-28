@@ -1,11 +1,11 @@
 .PHONY: \
-	install
-	clean
-	build
-	distribution-tarball
-	test
-	publish
-	broker
+	install \
+	clean \
+	build \
+	distribution-tarball \
+	test \
+	publish \
+	development
 
 # Project constants
 VERSION ?= 0.1
@@ -15,14 +15,6 @@ PYTHON ?= python3
 PIP ?= pip3
 VENV ?= .venv3
 PRE_COMMIT ?= pre-commit
-
-# Let the user specify PODMAN at the CLI, otherwise try to autodetect a working podman
-ifndef PODMAN
-	PODMAN := $(shell podman run --rm alpine echo podman 2> /dev/null)
-	ifndef PODMAN
-		DUMMY := $(warning podman is not detected. Majority of commands will not work. Please install and verify that podman --version works.)
-	endif
-endif
 
 all: clean build
 
@@ -65,5 +57,6 @@ test:
 publish:
 	. $(VENV)/bin/activate; python python/mqtt_publish.py
 
-broker:
-	@$(PODMAN) run -d -it -p 1883:1883 -p 9001:9001 -v $(PWD)/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:Z eclipse-mosquitto
+development:
+	@podman-compose -f development/podman-compose.yml down
+	podman-compose -f development/podman-compose.yml up

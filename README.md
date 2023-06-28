@@ -1,4 +1,4 @@
-# RHC Bash Worker
+# RHC Worker Bash
 
 Remote Host Configuration (rhc) worker for executing bash scripts on hosts
 managed by Red Hat Insights.
