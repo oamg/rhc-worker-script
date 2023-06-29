@@ -48,7 +48,7 @@ func readOutputFile(filePath string) (*bytes.Buffer, string) {
 	writer := multipart.NewWriter(body)
 
 	h := make(textproto.MIMEHeader)
-	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`, "file", "convert2rhel-report.json.tar.gz"))
+	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`, "file", "rhc-worker-bash-output.tar.gz"))
 	h.Set("Content-Type", "application/vnd.redhat.tasks.filename+tgz")
 	part, err := writer.CreatePart(h)
 	if err != nil {

@@ -1,25 +1,8 @@
 #!/usr/bin/env python3
 import json
-import os
 import socket
-import sys
-import time
 import uuid
-from http import server
 import paho.mqtt.client as mqtt
-import multiprocessing
-
-class CustomHandler(server.SimpleHTTPRequestHandler):
-  def __init__(self, request, client_address, server, *, directory = None):
-     super().__init__(request, client_address, server, directory=directory)
-
-  def handle_one_request(self):
-      super().handle_one_request()
-      sys.exit(0)
-
-def start_server(host, port):
-  httpd = server.HTTPServer((host, port), CustomHandler)
-  httpd.serve_forever()
 
 def get_ip_address():
   host_ip = ""
@@ -30,7 +13,7 @@ def get_ip_address():
   return host_ip
 
 # This is changed everytime you refresh the box and register the machine again.
-CLIENT_ID = "22e7b41c-944c-4778-81cf-facb6444d1a0"
+CLIENT_ID = "e73f3b91-0766-4d33-8d4c-8a529f5f1bc7"
 BROKER = '127.0.0.1'
 BROKER_PORT = 1883
 TOPIC = f"yggdrasil/{CLIENT_ID}/data/in"
@@ -38,37 +21,23 @@ TOPIC = f"yggdrasil/{CLIENT_ID}/data/in"
 MESSAGE = {
   "type": "data",
   "message_id": str(uuid.uuid4()),
-  # client_uuid doesn't seemt to be us  ed
-  # "client_uuid": CLIENT_ID,
   "version": 1,
   "sent": "2021-01-12T14:58:13+00:00", # str(datetime.datetime.now().isoformat()),
   "directive": 'rhc-worker-bash',
-  "content": f'http://{get_ip_address()}:8000/python/command',
+  "content": f'http://{get_ip_address()}:8000/command',
   "metadata": {
-    "report_file": "/var/log/convert2rhel/convert2rhel-report.json",
-    "return_url": 'http://raw.example.com/return'
+      "correlation_id": "00000000-0000-0000-0000-000000000000",
+      "return_url": f'http://{get_ip_address()}:8000/api/ingress/v1/upload',
+      "return_content_type": "application/vnd.redhat.tasks.filename+tgz"
   }
 }
 
 
 def main():
-  if not os.path.exists("python/command"):
-    print("You must create a python/command file in order to continue.")
-    sys.exit(1)
-
-  process = multiprocessing.Process(target=start_server, args=('0.0.0.0', 8000))
-  process.start()
-
-  print("Sleeping for 1 second to wait for the server")
-  time.sleep(1)
-
   client = mqtt.Client()
   client.connect(BROKER, BROKER_PORT, 60)
   client.publish(TOPIC, json.dumps(MESSAGE), 1, False)
   print("Published message to MQTT, serving content.")
-
-  process.join()
-
 
 
 if __name__ == "__main__":
