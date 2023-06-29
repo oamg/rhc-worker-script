@@ -14,7 +14,7 @@ services:
       - worker
 
   kafka:
-    image: confluentinc/cp-kafka
+    image: docker.io/confluentinc/cp-kafka
     ports:
       - 29092:29092
     depends_on:
@@ -95,7 +95,7 @@ services:
       - worker
 
   mqtt:
-    image: eclipse-mosquitto
+    image: docker.io/eclipse-mosquitto
     ports:
       - 1883:1883
       - 9001:9001
