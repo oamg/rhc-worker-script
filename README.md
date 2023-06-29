@@ -5,7 +5,7 @@ managed by Red Hat Insights.
 
 ## Getting started
 
-Create a bash script file called `command` inside the folder `python` and place
+Create a bash script file called `command` inside the folder `development/nginx` and place
 your code inside of it, like for example:
 
 ```bash
