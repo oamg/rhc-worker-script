@@ -23,7 +23,7 @@ install: .install .pre-commit
 .install:
 	virtualenv --system-site-packages --python $(PYTHON) $(VENV); \
 	. $(VENV)/bin/activate; \
-	$(PIP) install --upgrade -r ./python/requirements.txt; \
+	$(PIP) install --upgrade -r ./development/python/requirements.txt; \
 	touch $@
 
 .pre-commit:
@@ -55,7 +55,7 @@ test:
 	go test src/*
 
 publish:
-	. $(VENV)/bin/activate; python python/mqtt_publish.py
+	. $(VENV)/bin/activate; python development/python/mqtt_publish.py
 
 development:
 	@podman-compose -f development/podman-compose.yml down
