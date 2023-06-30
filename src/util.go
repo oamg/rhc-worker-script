@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -35,31 +36,34 @@ func writeFileToTemporaryDir(data []byte) string {
 	return fileName
 }
 
-func readOutputFile(filePath string) (*bytes.Buffer, string) {
-	log.Infoln("Reading file at:", filePath)
-	file, err := os.Open(filePath)
-	if err != nil {
-		log.Infoln("Failed to read output file: ", err)
-		return nil, ""
-	}
+type jsonResponseFormat struct {
+	CorrelationID string `json:"correlation_id"`
+	Stdout        string `json:"stdout"`
+}
 
-	log.Infoln("Writing form-data for file: ", filePath)
+func getOutputFile(scriptFileName string, stdout string, correlationID string, contentType string) (*bytes.Buffer, string) {
+	payloadData := jsonResponseFormat{CorrelationID: correlationID, Stdout: stdout}
+	jsonPayload, err := json.Marshal(payloadData)
+	if err != nil {
+		log.Errorln("Failed to marshal paylod data: ", err)
+	}
+	reader := bytes.NewReader(jsonPayload)
+
+	log.Infoln("Writing form-data for executed script: ", scriptFileName)
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 
 	h := make(textproto.MIMEHeader)
 	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`, "file", "rhc-worker-bash-output.tar.gz"))
-
-	// FIXME: parse it from metadata
-	h.Set("Content-Type", "application/vnd.redhat.tasks.filename+tgz")
+	h.Set("Content-Type", contentType)
 
 	part, err := writer.CreatePart(h)
 	if err != nil {
 		log.Errorln("Couldn't create form-file: ", err)
 	}
-	_, err = io.Copy(part, file)
+	_, err = io.Copy(part, reader)
 	if err != nil {
-		log.Errorln("Failed to copy contents to file: ", err)
+		log.Errorln("Failed to write json with script stdout to file: ", err)
 	}
 
 	writer.Close()

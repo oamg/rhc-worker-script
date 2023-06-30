@@ -25,20 +25,12 @@ func (s *jobServer) Send(ctx context.Context, d *pb.Data) (*pb.Receipt, error) {
 	go func() {
 		log.Infoln("Writing temporary bash script.")
 		// Write the file contents to the temporary disk
-		fileName := writeFileToTemporaryDir(d.GetContent())
-		defer os.Remove(fileName)
+		scriptFileName := writeFileToTemporaryDir(d.GetContent())
+		defer os.Remove(scriptFileName)
 
-		log.Infoln("Executing bash script located at: ", fileName)
+		log.Infoln("Executing and reading output of bash script located at: ", scriptFileName)
 		// Execute the script we wrote to the file
-		executeScript(fileName)
-
-		// TODO(r0x0d): Remove this after PoC. We will be reading the output
-		// that comes from the executeScript function, as we want what is in
-		// the stdout to make it more generic, instead of relying on reading an
-		// output file in the system. https://issues.redhat.com/browse/HMS-2005
-		reportFile := "/var/log/convert2rhel/convert2rhel-report.json"
-		log.Infoln("Reading output file at: ", reportFile)
-		fileContent, boundary := readOutputFile(reportFile)
+		commandOutput := executeScript(scriptFileName)
 
 		// Dial the Dispatcher and call "Finish"
 		conn, err := grpc.Dial(yggdDispatchSocketAddr, grpc.WithInsecure())
@@ -53,10 +45,14 @@ func (s *jobServer) Send(ctx context.Context, d *pb.Data) (*pb.Receipt, error) {
 		defer cancel()
 
 		// Create a data message to send back to the dispatcher.
-		// Call "Send"
+		log.Infof("Creating payload for message %s", d.GetMessageId())
+
+		correlationID := d.GetMetadata()["correlation_id"]
+		metadataContentType := d.GetMetadata()["return_content_type"]
+		fileContent, boundary := getOutputFile(scriptFileName, commandOutput, correlationID, metadataContentType)
+
 		var data *pb.Data
-		log.Infof("Sending message to %s", d.GetMessageId())
-		if fileContent != nil {
+		if commandOutput != "" {
 			contentType := fmt.Sprintf("multipart/form-data; boundary=%s", boundary)
 			log.Infof("Sending message to %s", d.GetMessageId())
 			data = &pb.Data{
@@ -75,6 +71,8 @@ func (s *jobServer) Send(ctx context.Context, d *pb.Data) (*pb.Receipt, error) {
 			}
 		}
 
+		// Call "Send"
+		log.Infof("Sending message to %s", d.GetMessageId())
 		log.Infoln("pb.Data message: ", data)
 		if _, err := c.Send(ctx, data); err != nil {
 			log.Error(err)
