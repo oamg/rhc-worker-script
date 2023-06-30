@@ -52,7 +52,7 @@ func (s *jobServer) Send(ctx context.Context, d *pb.Data) (*pb.Receipt, error) {
 		fileContent, boundary := getOutputFile(scriptFileName, commandOutput, correlationID, metadataContentType)
 
 		var data *pb.Data
-		if commandOutput != "" {
+		if commandOutput != "" && fileContent != nil {
 			contentType := fmt.Sprintf("multipart/form-data; boundary=%s", boundary)
 			log.Infof("Sending message to %s", d.GetMessageId())
 			data = &pb.Data{
