@@ -67,3 +67,13 @@ func readOutputFile(filePath string) (*bytes.Buffer, string) {
 	log.Infoln("form-data created, returning body: ", body)
 	return body, writer.Boundary()
 }
+
+func constructMetadata(receivedMetadata map[string]string, contentType string) map[string]string {
+	ourMetadata := map[string]string{
+		"Content-Type": contentType,
+	}
+	for k, v := range receivedMetadata {
+		ourMetadata[k] = v
+	}
+	return ourMetadata
+}
