@@ -62,11 +62,9 @@ func (s *jobServer) Send(ctx context.Context, d *pb.Data) (*pb.Receipt, error) {
 			data = &pb.Data{
 				MessageId:  uuid.New().String(),
 				ResponseTo: d.GetMessageId(),
-				Metadata: map[string]string{
-					"Content-Type": contentType,
-				},
-				Content:   fileContent.Bytes(),
-				Directive: d.GetMetadata()["return_url"],
+				Metadata:   constructMetadata(d.GetMetadata(), contentType),
+				Content:    fileContent.Bytes(),
+				Directive:  d.GetMetadata()["return_url"],
 			}
 		} else {
 			data = &pb.Data{
