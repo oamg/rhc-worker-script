@@ -8,10 +8,7 @@ import (
 	"git.sr.ht/~spc/go-log"
 )
 
-const logFolder string = "/var/log/rhc-worker-bash"
-const fileName string = "rhc-worker-bash.log"
-
-func setupLogger() *os.File {
+func setupLogger(logFolder string, fileName string) *os.File {
 	// Check if path exists, if not, create it.
 	if _, err := os.Stat(logFolder); err != nil {
 		if err := os.Mkdir(logFolder, os.ModePerm); err != nil {

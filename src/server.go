@@ -25,7 +25,7 @@ func (s *jobServer) Send(ctx context.Context, d *pb.Data) (*pb.Receipt, error) {
 	go func() {
 		log.Infoln("Writing temporary bash script.")
 		// Write the file contents to the temporary disk
-		scriptFileName := writeFileToTemporaryDir(d.GetContent())
+		scriptFileName := writeFileToTemporaryDir(d.GetContent(), temporaryWorkerDirectory)
 		defer os.Remove(scriptFileName)
 
 		log.Infoln("Executing and reading output of bash script located at: ", scriptFileName)

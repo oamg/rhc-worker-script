@@ -12,18 +12,23 @@ import (
 	"google.golang.org/grpc"
 )
 
+// FIXME: Set all contants from ENV variables
 var yggdDispatchSocketAddr string
+var logFolder string
+var logFileName string
+var temporaryWorkerDirectory string
 
 func main() {
-	var ok bool
 	// Get initialization values from the environment.
-	yggdDispatchSocketAddr, ok = os.LookupEnv("YGG_SOCKET_ADDR")
-	if !ok {
+	yggdDispatchSocketAddr, yggSocketAddrExists := os.LookupEnv("YGG_SOCKET_ADDR")
+	if !yggSocketAddrExists {
 		log.Fatal("Missing YGG_SOCKET_ADDR environment variable")
 	}
+	logFolder = getEnv("RHC_WORKER_BASH_LOG_FOLDER", "/var/log/rhc-worker-bash")
+	logFileName = getEnv("RHC_WORKER_BASH_LOG_FILENAME", "rhc-worker-bash.log")
+	temporaryWorkerDirectory = getEnv("RHC_WORKER_BASH_TMP_DIR", "/var/lib/rhc-worker-bash")
 
-	// Setup the logger
-	logFile := setupLogger()
+	logFile := setupLogger(logFolder, logFileName)
 	defer logFile.Close()
 
 	// Dial the dispatcher on its well-known address.
