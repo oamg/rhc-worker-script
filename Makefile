@@ -8,7 +8,7 @@
 	development
 
 # Project constants
-VERSION ?= 0.1
+VERSION ?= 0.2
 PKGNAME ?= rhc-worker-bash
 GO_SOURCES := $(wildcard src/*.go)
 PYTHON ?= python3
