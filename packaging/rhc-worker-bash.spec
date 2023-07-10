@@ -23,7 +23,7 @@ Release:        1%{?dist}
 Summary:        Remote Host Configuration (rhc) worker for executing bash scripts on hosts managed by Red Hat Insights.
 
 License:        GPLv3+
-URL:            https://github.com/%{repo_orgname}/%{repo_name}/
+URL:            https://github.com/%{repo_orgname}/%{repo_name}
 Source0:        %{url}/archive/v%{version}/%{name}-%{version}.tar.gz
 ExclusiveArch:  %{go_arches}
 
