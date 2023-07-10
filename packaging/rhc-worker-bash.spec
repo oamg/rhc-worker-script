@@ -18,13 +18,13 @@
 %endif
 
 Name:           %{repo_name}
-Version:        0.1
+Version:        0.2
 Release:        1%{?dist}
 Summary:        Remote Host Configuration (rhc) worker for executing bash scripts on hosts managed by Red Hat Insights.
 
 License:        GPLv3+
-URL:            https://github.com/%{repo_orgname}/%{repo_name}/
-Source0:        https://github.com/%{repo_orgname}/%{repo_name}/releases/download/v%{version}/%{repo_name}-%{version}.tar.gz
+URL:            https://github.com/%{repo_orgname}/%{repo_name}
+Source0:        %{url}/archive/v%{version}/%{name}-%{version}.tar.gz
 ExclusiveArch:  %{go_arches}
 
 BuildRequires:  golang
@@ -60,6 +60,9 @@ install -D -d -m 755 %{buildroot}%{rhc_worker_conf_dir}
 %doc README.md
 
 %changelog
+
+* Thu Jul 06 2023 Eric Gustavsson <egustavs@redhat.com> 0.2-1
+- Fix RPM specfile Source
 
 * Wed Jun 14 2023 Rodolfo Olivieri <rolivier@redhat.com> 0.1-1
 - Initial RPM release
