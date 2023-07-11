@@ -27,7 +27,7 @@ URL:            https://github.com/%{repo_orgname}/%{repo_name}
 Source0:        %{url}/archive/v%{version}/%{name}-%{version}.tar.gz
 ExclusiveArch:  %{go_arches}
 
-BuildRequires:  golang
+BuildRequires:  go-toolset-1.16-golang
 Requires:       rhc
 
 %description
@@ -38,6 +38,7 @@ managed by Red Hat Insights.
 %setup -q
 
 %build
+scl enable go-toolset-1.16
 mkdir -p _gopath/src
 ln -fs $(pwd)/src _gopath/src/%{binary_name}-%{version}
 ln -fs $(pwd)/vendor _gopath/src/%{binary_name}-%{version}/vendor
@@ -49,6 +50,7 @@ popd
 
 
 %install
+scl enable go-toolset-1.16
 # Create a temporary directory /var/lib/rhc-worker-bash - used mainly for storing temporary files
 install -d %{buildroot}%{_sharedstatedir}/%{binary_name}/
 
