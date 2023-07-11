@@ -1,0 +1,18 @@
+vars:
+  # Signature to validate that no one tampered with script
+  _insights_signature: |
+    ascii_armored gpg signature
+  _insights_signature_exclude: "/vars/insights_signature,/vars/content_vars"
+  content: |
+    #!/bin/sh
+    data='{"alert": false, "summary": "convert2rhel did not detect issues", "report": "", "report_json": {"foo": "bar"}}'
+    /usr/bin/convert2rhel --help
+    /usr/bin/convert2rhel --version
+    echo "BEGIN MARKER"
+    echo "$data"
+    echo "END MARKER"
+  content_vars:
+    # variables that will be handed to the script as environment vars
+    # will be prefixed with RHC_WORKER_*
+    FOO: bar
+    BAR: foo

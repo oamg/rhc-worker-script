@@ -20,6 +20,21 @@ func getEnv(key, fallback string) string {
 	return fallback
 }
 
+// Set initialization values from the environment variables
+func initializeEnvironment() (bool, string) {
+	var yggSocketAddrExists bool // Has to be separately declared otherwise grpc.Dial doesn't work
+	yggdDispatchSocketAddr, yggSocketAddrExists = os.LookupEnv("YGG_SOCKET_ADDR")
+	if !yggSocketAddrExists {
+		return false, "Missing YGG_SOCKET_ADDR environment variable"
+	}
+	logFolder = getEnv("RHC_WORKER_LOG_FOLDER", "/var/log/rhc-worker-bash")
+	logFileName = getEnv("RHC_WORKER_LOG_FILENAME", "rhc-worker-bash.log")
+	temporaryWorkerDirectory = getEnv("RHC_WORKER_TMP_DIR", "/var/lib/rhc-worker-bash")
+	shouldDoInsightsCoreGPGCheck = getEnv("RHC_WORKER_GPG_CHECK", "1")
+	shouldVerifyYaml = getEnv("RHC_WORKER_VERIFY_YAML", "1")
+	return true, ""
+}
+
 // writeFileToTemporaryDir writes the provided data to a temporary file in the
 // designated temporary worker directory. It creates the directory if it doesn't exist.
 // The function returns the filename of the created temporary file.
@@ -55,7 +70,7 @@ type jsonResponseFormat struct {
 // It takes the script file name, stdout string, correlation ID, and content type as input.
 // The function constructs the form-data payload containing the script output as a JSON
 // file and returns the payload as a *bytes.Buffer and the boundary string.
-func getOutputFile(scriptFileName string, stdout string, correlationID string, contentType string) (*bytes.Buffer, string) {
+func getOutputFile(stdout string, correlationID string, contentType string) (*bytes.Buffer, string) {
 	payloadData := jsonResponseFormat{CorrelationID: correlationID, Stdout: stdout}
 	jsonPayload, err := json.Marshal(payloadData)
 	if err != nil {
@@ -63,7 +78,7 @@ func getOutputFile(scriptFileName string, stdout string, correlationID string, c
 	}
 	reader := bytes.NewReader(jsonPayload)
 
-	log.Infoln("Writing form-data for executed script: ", scriptFileName)
+	log.Infoln("Writing form-data for executed script: ")
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 

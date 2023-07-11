@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
 	"time"
 
 	"git.sr.ht/~spc/go-log"
@@ -11,6 +10,34 @@ import (
 	pb "github.com/redhatinsights/yggdrasil/protocol"
 	"google.golang.org/grpc"
 )
+
+// Create message payload
+func createDataMessage(commandOutput string, metadata map[string]string, directive string, messageID string) *pb.Data {
+	correlationID := metadata["correlation_id"]
+	metadataContentType := metadata["return_content_type"]
+	fileContent, boundary := getOutputFile(commandOutput, correlationID, metadataContentType)
+
+	var data *pb.Data
+	if commandOutput != "" && fileContent != nil {
+		contentType := fmt.Sprintf("multipart/form-data; boundary=%s", boundary)
+		log.Infof("Sending message to %s", messageID)
+		data = &pb.Data{
+			MessageId:  uuid.New().String(),
+			ResponseTo: messageID,
+			Metadata:   constructMetadata(metadata, contentType),
+			Content:    fileContent.Bytes(),
+			Directive:  metadata["return_url"],
+		}
+	} else {
+		data = &pb.Data{
+			MessageId:  uuid.New().String(),
+			ResponseTo: messageID,
+			Metadata:   metadata,
+			Directive:  directive,
+		}
+	}
+	return data
+}
 
 // jobServer implements the Worker gRPC service as defined by the yggdrasil
 // gRPC protocol. It accepts Assignment messages, unmarshals the data into a
@@ -33,14 +60,8 @@ type jobServer struct {
 //  6. Sends the data message using the "Send" method of the Dispatcher service.
 func (s *jobServer) Send(ctx context.Context, d *pb.Data) (*pb.Receipt, error) {
 	go func() {
-		log.Infoln("Writing temporary bash script.")
-		// Write the file contents to the temporary disk
-		scriptFileName := writeFileToTemporaryDir(d.GetContent(), temporaryWorkerDirectory)
-		defer os.Remove(scriptFileName)
-
-		log.Infoln("Executing and reading output of bash script located at: ", scriptFileName)
-		// Execute the script we wrote to the file
-		commandOutput := executeScript(scriptFileName)
+		log.Infoln("Processing received yaml data")
+		commandOutput := processSignedScript(d.GetContent())
 
 		// Dial the Dispatcher and call "Finish"
 		conn, err := grpc.Dial(yggdDispatchSocketAddr, grpc.WithInsecure())
@@ -56,30 +77,7 @@ func (s *jobServer) Send(ctx context.Context, d *pb.Data) (*pb.Receipt, error) {
 
 		// Create a data message to send back to the dispatcher.
 		log.Infof("Creating payload for message %s", d.GetMessageId())
-
-		correlationID := d.GetMetadata()["correlation_id"]
-		metadataContentType := d.GetMetadata()["return_content_type"]
-		fileContent, boundary := getOutputFile(scriptFileName, commandOutput, correlationID, metadataContentType)
-
-		var data *pb.Data
-		if commandOutput != "" && fileContent != nil {
-			contentType := fmt.Sprintf("multipart/form-data; boundary=%s", boundary)
-			log.Infof("Sending message to %s", d.GetMessageId())
-			data = &pb.Data{
-				MessageId:  uuid.New().String(),
-				ResponseTo: d.GetMessageId(),
-				Metadata:   constructMetadata(d.GetMetadata(), contentType),
-				Content:    fileContent.Bytes(),
-				Directive:  d.GetMetadata()["return_url"],
-			}
-		} else {
-			data = &pb.Data{
-				MessageId:  uuid.New().String(),
-				ResponseTo: d.GetMessageId(),
-				Metadata:   d.GetMetadata(),
-				Directive:  d.GetDirective(),
-			}
-		}
+		data := createDataMessage(commandOutput, d.GetMetadata(), d.GetDirective(), d.GetMessageId())
 
 		// Call "Send"
 		log.Infof("Sending message to %s", d.GetMessageId())

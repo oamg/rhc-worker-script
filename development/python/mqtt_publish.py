@@ -13,10 +13,13 @@ def get_ip_address():
   return host_ip
 
 # This is changed everytime you refresh the box and register the machine again.
-CLIENT_ID = "e9c0d844-1e0d-4829-9faf-5430aec16205"
+CLIENT_ID = "973afbce-19b4-4862-9d7a-6e9d8c410674"
 BROKER = '127.0.0.1'
 BROKER_PORT = 1883
 TOPIC = f"yggdrasil/{CLIENT_ID}/data/in"
+
+# NOTE: currently can be whatever you placed inside devleopment/nginx/data folder
+SERVED_FILENAME = "yaml-file"
 
 MESSAGE = {
   "type": "data",
@@ -24,7 +27,7 @@ MESSAGE = {
   "version": 1,
   "sent": "2021-01-12T14:58:13+00:00", # str(datetime.datetime.now().isoformat()),
   "directive": 'rhc-worker-bash',
-  "content": f'http://{get_ip_address()}:8000/command',
+  "content": f'http://{get_ip_address()}:8000/data/{SERVED_FILENAME}',
   "metadata": {
       "correlation_id": "00000000-0000-0000-0000-000000000000",
       "return_url": f'http://{get_ip_address()}:8000/api/ingress/v1/upload',

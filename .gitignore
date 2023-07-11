@@ -2,5 +2,5 @@ build/*
 .venv3
 .install
 .pre-commit
-development/nginx/command
+development/nginx/data/*
 coverage.out
