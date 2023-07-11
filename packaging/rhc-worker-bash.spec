@@ -20,7 +20,7 @@
 Name:           %{repo_name}
 Version:        0.2
 Release:        1%{?dist}
-Summary:        Remote Host Configuration (rhc) worker for executing bash scripts on hosts managed by Red Hat Insights.
+Summary:        Worker executing bash scripts on hosts managed by Red Hat Insights
 
 License:        GPLv3+
 URL:            https://github.com/%{repo_orgname}/%{repo_name}
@@ -31,7 +31,8 @@ BuildRequires:  golang
 Requires:       rhc
 
 %description
-Remote Host Configuration (rhc) worker for executing bash scripts on hosts managed by Red Hat Insights.
+Remote Host Configuration (rhc) worker for executing bash scripts on hosts
+managed by Red Hat Insights.
 
 %prep
 %setup -q
