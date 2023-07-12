@@ -12,12 +12,15 @@ import (
 	"google.golang.org/grpc"
 )
 
-// FIXME: Set all contants from ENV variables
 var yggdDispatchSocketAddr string
 var logFolder string
 var logFileName string
 var temporaryWorkerDirectory string
 
+// main is the entry point of the application. It initializes values from the environment,
+// sets up the logger, establishes a connection with the dispatcher, registers as a handler,
+// listens for incoming messages, and starts accepting connections as a Worker service.
+// Note: The function blocks and runs indefinitely until the server is stopped.
 func main() {
 	// Get initialization values from the environment.
 	yggdDispatchSocketAddr, yggSocketAddrExists := os.LookupEnv("YGG_SOCKET_ADDR")
