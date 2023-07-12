@@ -4,8 +4,11 @@
 	build \
 	distribution-tarball \
 	test \
+	test-container \
 	publish \
-	development
+	development \
+	coverage \
+	coverage-html
 
 # Project constants
 VERSION ?= 0.2
@@ -15,6 +18,12 @@ PYTHON ?= python3
 PIP ?= pip3
 VENV ?= .venv3
 PRE_COMMIT ?= pre-commit
+
+ifdef KEEP_TEST_CONTAINER
+	CONTAINER_RM =
+else
+	CONTAINER_RM = --rm
+endif
 
 all: clean build
 
@@ -51,8 +60,20 @@ distribution-tarball:
 		. && mv /tmp/$(PKGNAME)-$(VERSION).tar.gz .
 	rm -rf ./vendor
 
+
+# NOTE: We could also add -race option to add detection for race conditions,
+# however that significantly increases time execution
 test:
-	go test src/*
+	go test -coverprofile=coverage.out ./...
+
+test-container:
+	podman run --replace --name go-test-container $(CONTAINER_RM) -v $(shell pwd):/app:Z -w /app docker.io/golang:1.20 make test
+
+coverage: test
+	go tool cover -func=coverage.out
+
+coverage-html: test
+	go tool cover -html=coverage.out
 
 publish:
 	. $(VENV)/bin/activate; python development/python/mqtt_publish.py

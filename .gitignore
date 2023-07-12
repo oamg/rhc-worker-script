@@ -3,3 +3,4 @@ build/*
 .install
 .pre-commit
 development/nginx/command
+coverage.out

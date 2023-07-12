@@ -1,27 +1,39 @@
-name: Go
+name: test_coverage
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   pull_request:
+    branches: [ main ]
 
 jobs:
-  build:
-    name: "Build"
+  tests:
+    name: "Tests + coverage"
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go: ['1.20']
+        go-version: ['1.20']
     steps:
       - uses: actions/checkout@v2
 
       - name: Setup go
         uses: actions/setup-go@v2
         with:
-          go-version: ${{ matrix.go }}
+          go-version: ${{ matrix.go-version }}
 
       - name: Go build (source)
         run: make
 
       - name: Go build (tests)
-        run: make test
+        run: |
+          make test-container KEEP_TEST_CONTAINER=1
+          podman cp go-test-container:/app/coverage.out .
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.out
+          flags: go-${{ matrix.go-version }}
+          name: coverage-go-${{ matrix.go-version }}
+          fail_ci_if_error: true
+          verbose: true

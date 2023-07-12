@@ -12,9 +12,15 @@ import (
 	"git.sr.ht/~spc/go-log"
 )
 
-const temporaryWorkerDirectory string = "/var/lib/rhc-worker-bash"
+// Calls os.LookupEnv for key, if not found then fallback value is returned
+func getEnv(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return fallback
+}
 
-func writeFileToTemporaryDir(data []byte) string {
+func writeFileToTemporaryDir(data []byte, temporaryWorkerDirectory string) string {
 	// Check if path exists, if not, create it.
 	if _, err := os.Stat(temporaryWorkerDirectory); err != nil {
 		if err := os.Mkdir(temporaryWorkerDirectory, os.ModePerm); err != nil {
