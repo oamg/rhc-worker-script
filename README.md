@@ -55,18 +55,42 @@ Overview of what is needed:
 2. Start MQTT broker, data host for serving the script and minio storage
     * You can take advantage of `make development` command to create neccessary containers, inspect `development/podman-compose.yml` for more details
 3. Publish new message to broker
-    * Change `CLIENT_ID` on L16 in `development/python/mqtt_publish.py` file if needed
+    * [Optional] Change values in `development/python/mqtt_publish.py`
+      * `CLIENT_ID` - can be found in logs after running rhcd
+      * `SERVED_FILENAME` - one of the files inside `development/nginx/data`
     * Call `make publish`
 4. You should see logs in rhcd and file with stdout of your script uploaded to the minio storage
     * Go to http://localhost:9990/login and use credentials from `.env` file
 
 ### Bash script example
 
-*NOTE: This is subject to changes, right now worker is executing raw bash script, but in near future we expect that worker will execute bash script wrapped in signed yaml file.*
+Create or update a yaml file inside the folder `development/nginx/data/*`.
+Correct structure with exampe bash script can be seen below:
 
-Create a bash script file called `command` inside the folder `development/nginx` and place
-your code inside of it, like for example:
-
-```bash
-/usr/bin/convert2rhel --help
+```yml
+vars:
+  _insights_signature: |
+    ascii_armored gpg signature
+  _insights_signature_exclude: "/vars/insights_signature,/vars/content_vars"
+  content: |
+    #!/bin/sh
+    /usr/bin/convert2rhel --help
+  content_vars:
+    # variables that will be handed to the script as environment vars
+    # will be prefixed with RHC_WORKER_*
+    FOO: bar
+    BAR: foo
 ```
+### Environment variables
+
+Environment variables used by our worker are always prefixed with `RHC_WORKER_`.
+
+Use below variables to adjust worker behavior.
+* Related to logging
+  * `RHC_WORKER_LOG_FOLDER` - default is `"/var/log/rhc-worker-bash"`
+  * `RHC_WORKER_LOG_FILENAME` - default is `"rhc-worker-bash.log"`
+* Related to verification of yaml file containing bash script
+  * `RHC_WORKER_GPG_CHECK` - default is `"1"`
+  * `RHC_WORKER_VERIFY_YAML` - default is `"1"`
+* Related to script temporary location and execution
+  * `RHC_WORKER_TMP_DIR` - default is `"/var/lib/rhc-worker-bash"`

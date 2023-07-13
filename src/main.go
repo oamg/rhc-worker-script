@@ -12,24 +12,23 @@ import (
 	"google.golang.org/grpc"
 )
 
+// Initialized in main
 var yggdDispatchSocketAddr string
 var logFolder string
 var logFileName string
 var temporaryWorkerDirectory string
+var shouldDoInsightsCoreGPGCheck string
+var shouldVerifyYaml string
 
 // main is the entry point of the application. It initializes values from the environment,
 // sets up the logger, establishes a connection with the dispatcher, registers as a handler,
 // listens for incoming messages, and starts accepting connections as a Worker service.
 // Note: The function blocks and runs indefinitely until the server is stopped.
 func main() {
-	// Get initialization values from the environment.
-	yggdDispatchSocketAddr, yggSocketAddrExists := os.LookupEnv("YGG_SOCKET_ADDR")
-	if !yggSocketAddrExists {
-		log.Fatal("Missing YGG_SOCKET_ADDR environment variable")
+	initializedOK, errorMsg := initializeEnvironment()
+	if errorMsg != "" && !initializedOK {
+		log.Fatal(errorMsg)
 	}
-	logFolder = getEnv("RHC_WORKER_BASH_LOG_FOLDER", "/var/log/rhc-worker-bash")
-	logFileName = getEnv("RHC_WORKER_BASH_LOG_FILENAME", "rhc-worker-bash.log")
-	temporaryWorkerDirectory = getEnv("RHC_WORKER_BASH_TMP_DIR", "/var/lib/rhc-worker-bash")
 
 	logFile := setupLogger(logFolder, logFileName)
 	defer logFile.Close()

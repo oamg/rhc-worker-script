@@ -32,7 +32,8 @@ func setupLogger(logFolder string, fileName string) *os.File {
 	if ok {
 		level, ok := log.ParseLevel(yggdLogLevel)
 		if ok != nil {
-			log.Errorf("Could not parse log level '%v'", yggdLogLevel)
+			log.Errorf("Could not parse log level '%v', setting the level to info", yggdLogLevel)
+			log.SetLevel(log.LevelInfo)
 		} else {
 			log.SetLevel(level)
 		}

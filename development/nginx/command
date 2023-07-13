@@ -1,7 +1,0 @@
-data='{"alert": false, "summary": "convert2rhel did not detect issues", "report": "", "report_json": {"foo": "bar"}}'
-
-/usr/bin/convert2rhel --help
-/usr/bin/convert2rhel --version
-echo "BEGIN MARKER"
-echo "$data"
-echo "END MARKER"
