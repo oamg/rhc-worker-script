@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"os"
 	"testing"
 )
@@ -15,12 +16,13 @@ func TestProcessSignedScript(t *testing.T) {
 		InsightsCoreGPGCheck:     &shouldDoInsightsCoreGPGCheck,
 	}
 
+	ctx, cancel := context.WithCancel(context.Background())
 	defer os.RemoveAll(temporaryWorkerDirectory)
 
 	// Test case 1: verification disabled, no yaml data supplied = empty output
 	yamlData := []byte{}
 	expectedResult := ""
-	result := processSignedScript(yamlData)
+	result := processSignedScript(ctx, yamlData)
 	if result != expectedResult {
 		t.Errorf("Expected %q, but got %q", expectedResult, result)
 	}
@@ -37,7 +39,7 @@ vars:
         FOO: Hello
         BAR: World`)
 	expectedResult = "Hello World!\n"
-	result = processSignedScript(yamlData)
+	result = processSignedScript(ctx, yamlData)
 	if result != expectedResult {
 		t.Errorf("Expected %q, but got %q", expectedResult, result)
 	}
@@ -47,7 +49,16 @@ vars:
 	shouldVerifyYaml = true
 	shouldDoInsightsCoreGPGCheck = true
 	expectedResult = "Signature of yaml file is invalid"
-	result = processSignedScript(yamlData)
+	result = processSignedScript(ctx, yamlData)
+	if result != expectedResult {
+		t.Errorf("Expected %q, but got %q", expectedResult, result)
+	}
+
+	cancel()
+	// Test case 4: verification disabled, context canceled, script shouldn't be executed
+	shouldVerifyYaml = false
+	expectedResult = ""
+	result = processSignedScript(ctx, yamlData)
 	if result != expectedResult {
 		t.Errorf("Expected %q, but got %q", expectedResult, result)
 	}
@@ -62,8 +73,11 @@ func TestVerifyYamlFile(t *testing.T) {
 		InsightsCoreGPGCheck: &shouldDoInsightsCoreGPGCheck,
 	}
 	// Test case 1: verification disabled
+	ctx, cancel := context.WithCancel(context.Background())
+
+	// Test case 1: shouldVerifyYaml is not "1"
 	expectedResult := true
-	result := verifyYamlFile([]byte{})
+	result := verifyYamlFile(ctx, []byte{})
 	if result != expectedResult {
 		t.Errorf("Expected %v, but got %v", expectedResult, result)
 	}
@@ -73,7 +87,7 @@ func TestVerifyYamlFile(t *testing.T) {
 	// FIXME: This should succedd but now verification fails on missing insighs-client
 	// We also need valid signature
 	expectedResult = false
-	result = verifyYamlFile([]byte("valid-yaml"))
+	result = verifyYamlFile(ctx, []byte("valid-yaml"))
 	if result != expectedResult {
 		t.Errorf("Expected %v, but got %v", expectedResult, result)
 	}
@@ -82,7 +96,16 @@ func TestVerifyYamlFile(t *testing.T) {
 	// Test case 3: sverification is enabled and verification fails
 	// shouldVerifyYaml = true
 	expectedResult = false
-	result = verifyYamlFile([]byte("invalid-yaml")) // Replace with your YAML data
+	result = verifyYamlFile(ctx, []byte("invalid-yaml")) // Replace with your YAML data
+	if result != expectedResult {
+		t.Errorf("Expected %v, but got %v", expectedResult, result)
+	}
+
+	cancel()
+	// Test case 4: context is cancelled, verification command shouldn't be called
+	shouldVerifyYaml = true
+	expectedResult = false
+	result = verifyYamlFile(ctx, []byte("invalid-yaml")) // Replace with your YAML data
 	if result != expectedResult {
 		t.Errorf("Expected %v, but got %v", expectedResult, result)
 	}

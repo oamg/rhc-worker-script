@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -21,7 +22,7 @@ type signedYamlFile struct {
 }
 
 // Verify that no one tampered with yaml file
-func verifyYamlFile(yamlData []byte) bool {
+func verifyYamlFile(ctx context.Context, yamlData []byte) bool {
 
 	if !*config.VerifyYAML {
 		log.Warnln("WARNING: Playbook verification disabled.")
@@ -43,7 +44,7 @@ func verifyYamlFile(yamlData []byte) bool {
 		env = append(env, "BYPASS_GPG=True")
 	}
 
-	cmd := exec.Command("insights-client", args...)
+	cmd := exec.CommandContext(ctx, "insights-client", args...)
 	cmd.Env = env
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
@@ -71,8 +72,8 @@ func verifyYamlFile(yamlData []byte) bool {
 // If signature is valid then extracts the bash script to temporary file,
 // sets env variables if present and then runs the script.
 // Return stdout of executed script or error message if the signature wasn't valid.
-func processSignedScript(yamlFileContet []byte) string {
-	signatureIsValid := verifyYamlFile(yamlFileContet)
+func processSignedScript(ctx context.Context, incomingContent []byte) string {
+	signatureIsValid := verifyYamlFile(ctx, incomingContent)
 	if !signatureIsValid {
 		errorMsg := "Signature of yaml file is invalid"
 		log.Errorln(errorMsg)
@@ -82,9 +83,10 @@ func processSignedScript(yamlFileContet []byte) string {
 
 	// Parse the YAML data into the yamlConfig struct
 	var yamlContent signedYamlFile
-	err := yaml.Unmarshal(yamlFileContet, &yamlContent)
+	err := yaml.Unmarshal(incomingContent, &yamlContent)
 	if err != nil {
 		log.Errorln(err)
+		return "Yaml couldn't be unmarshaled"
 	}
 
 	// Set env variables
@@ -123,8 +125,7 @@ func processSignedScript(yamlFileContet []byte) string {
 
 	// Execute the script
 	log.Infoln("Executing bash script")
-
-	out, err := exec.Command("/bin/sh", scriptFileName).Output()
+	out, err := exec.CommandContext(ctx, "/bin/sh", scriptFileName).Output()
 	if err != nil {
 		log.Errorln("Failed to execute script: ", err)
 		return ""
