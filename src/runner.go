@@ -71,8 +71,8 @@ func verifyYamlFile(yamlData []byte) bool {
 // If signature is valid then extracts the bash script to temporary file,
 // sets env variables if present and then runs the script.
 // Return stdout of executed script or error message if the signature wasn't valid.
-func processSignedScript(yamlFileContet []byte) string {
-	signatureIsValid := verifyYamlFile(yamlFileContet)
+func processSignedScript(incomingContent []byte) string {
+	signatureIsValid := verifyYamlFile(incomingContent)
 	if !signatureIsValid {
 		errorMsg := "Signature of yaml file is invalid"
 		log.Errorln(errorMsg)
@@ -82,9 +82,10 @@ func processSignedScript(yamlFileContet []byte) string {
 
 	// Parse the YAML data into the yamlConfig struct
 	var yamlContent signedYamlFile
-	err := yaml.Unmarshal(yamlFileContet, &yamlContent)
+	err := yaml.Unmarshal(incomingContent, &yamlContent)
 	if err != nil {
 		log.Errorln(err)
+		return "Yaml couldn't be unmarshaled"
 	}
 
 	// Set env variables
@@ -123,8 +124,8 @@ func processSignedScript(yamlFileContet []byte) string {
 
 	// Execute the script
 	log.Infoln("Executing bash script")
-
 	out, err := exec.Command("/bin/sh", scriptFileName).Output()
+
 	if err != nil {
 		log.Errorln("Failed to execute script: ", err)
 		return ""
