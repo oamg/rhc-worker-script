@@ -20,7 +20,7 @@ jobs:
           tagRegexGroup: 1 # Optional. Default is 1.
 
       - name: Checkout the repository
-        uses: actions/checkout@v3.5.2
+        uses: actions/checkout@v3
 
       - name: Generate build files
         uses: thatisuday/go-cross-build@v1.0.2
