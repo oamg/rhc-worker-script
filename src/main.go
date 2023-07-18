@@ -10,6 +10,7 @@ import (
 
 	pb "github.com/redhatinsights/yggdrasil/protocol"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 // Initialized in main
@@ -34,7 +35,7 @@ func main() {
 	defer logFile.Close()
 
 	// Dial the dispatcher on its well-known address.
-	conn, err := grpc.Dial(yggdDispatchSocketAddr, grpc.WithInsecure())
+	conn, err := grpc.Dial(yggdDispatchSocketAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatal(err)
 	}
