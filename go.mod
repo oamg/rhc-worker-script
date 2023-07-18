@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	git.sr.ht/~spc/go-log v0.0.0-20220407193148-15b04da8a6c5
-	github.com/google/uuid v1.1.2
+	github.com/google/uuid v1.3.0
 	github.com/redhatinsights/yggdrasil v0.0.0-20210811162724-41397343c25b
 	google.golang.org/grpc v1.40.0
 	gopkg.in/yaml.v3 v3.0.1
