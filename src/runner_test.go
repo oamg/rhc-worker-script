@@ -6,13 +6,19 @@ import (
 )
 
 func TestProcessSignedScript(t *testing.T) {
-	temporaryWorkerDirectory = "test-dir"
+	shouldVerifyYaml := false
+	shouldDoInsightsCoreGPGCheck := false
+	temporaryWorkerDirectory := "test-dir"
+	config = &Config{
+		VerifyYAML:               &shouldVerifyYaml,
+		TemporaryWorkerDirectory: &temporaryWorkerDirectory,
+		InsightsCoreGPGCheck:     &shouldDoInsightsCoreGPGCheck,
+	}
+
 	defer os.RemoveAll(temporaryWorkerDirectory)
 
 	// Test case 1: verification disabled, no yaml data supplied = empty output
-	shouldVerifyYaml = "0"
 	yamlData := []byte{}
-
 	expectedResult := ""
 	result := processSignedScript(yamlData)
 	if result != expectedResult {
@@ -38,8 +44,8 @@ vars:
 
 	// FIXME: This is false success because verification fails on missing insighs-client
 	// Test case 3: verification enabled, invalid signature = error msg returned
-	shouldVerifyYaml = "1"
-	shouldDoInsightsCoreGPGCheck = "0"
+	shouldVerifyYaml = true
+	shouldDoInsightsCoreGPGCheck = true
 	expectedResult = "Signature of yaml file is invalid"
 	result = processSignedScript(yamlData)
 	if result != expectedResult {
@@ -48,16 +54,22 @@ vars:
 }
 
 func TestVerifyYamlFile(t *testing.T) {
-	// Test case 1: shouldVerifyYaml is not "1"
-	shouldVerifyYaml = "0"
+	shouldVerifyYaml := false
+	shouldDoInsightsCoreGPGCheck := false
+
+	config = &Config{
+		VerifyYAML:           &shouldVerifyYaml,
+		InsightsCoreGPGCheck: &shouldDoInsightsCoreGPGCheck,
+	}
+	// Test case 1: verification disabled
 	expectedResult := true
 	result := verifyYamlFile([]byte{})
 	if result != expectedResult {
 		t.Errorf("Expected %v, but got %v", expectedResult, result)
 	}
 
-	// Test case 2: shouldVerifyYaml is "1" and verification succeeds
-	shouldVerifyYaml = "1"
+	// Test case 2: verification enabled and verification succeeds
+	shouldVerifyYaml = true
 	// FIXME: This should succedd but now verification fails on missing insighs-client
 	// We also need valid signature
 	expectedResult = false
@@ -67,8 +79,8 @@ func TestVerifyYamlFile(t *testing.T) {
 	}
 
 	// FIXME: Valid test case but fails because of missing insights-client
-	// Test case 3: shouldVerifyYaml is "1" and verification fails
-	shouldVerifyYaml = "1"
+	// Test case 3: sverification is enabled and verification fails
+	// shouldVerifyYaml = true
 	expectedResult = false
 	result = verifyYamlFile([]byte("invalid-yaml")) // Replace with your YAML data
 	if result != expectedResult {

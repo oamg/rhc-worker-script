@@ -81,16 +81,39 @@ vars:
     FOO: bar
     BAR: foo
 ```
-### Environment variables
+## FAQ
 
-Environment variables used by our worker are always prefixed with `RHC_WORKER_`.
+### Are there special environment variables that worker uses?
 
-Use below variables to adjust worker behavior.
-* Related to logging
-  * `RHC_WORKER_LOG_FOLDER` - default is `"/var/log/rhc-worker-bash"`
-  * `RHC_WORKER_LOG_FILENAME` - default is `"rhc-worker-bash.log"`
-* Related to verification of yaml file containing bash script
-  * `RHC_WORKER_GPG_CHECK` - default is `"1"`
-  * `RHC_WORKER_VERIFY_YAML` - default is `"1"`
-* Related to script temporary location and execution
-  * `RHC_WORKER_TMP_DIR` - default is `"/var/lib/rhc-worker-bash"`
+There is one special variable that must be set in order to run our worker and that is `YGG_SOCKET_ADDR`, this variable value is set by `rhcd` via `--socket-addr` option.
+
+Other than that there are no special variables, however if executed bash script contained some `content_vars` (like the example above), then during the execution of the script are all environment variables always prefixed with `RHC_WORKER_`and unset after the bash script completes.
+
+### Can I somehow change behavior of worker? e.g. different destination for logs?
+
+Yes, some values can be changed if config exists at `/etc/rhc/workers/rhc-worker-bash.yml`, **the config must have valid yaml format**, see all available fields below.
+
+Example of full config (with default values):
+```yaml
+# rhc-worker-bash configuration
+
+# recipient directive to register with dispatcher
+directive: "rhc-worker-bash"
+
+# whether to verify incoming yaml files
+verify_yaml: true
+
+# perform the insights-client GPG check on the insights-core egg
+insights_core_gpg_check: true
+
+# temporary directory in which the temporary files with executed bash scripts are created
+temporary_worker_directory: "/var/lib/rhc-worker-bash"
+
+# Options to adjust name and directory for worker logs
+log_dir: "/var/log/rhc-worker-bash"
+log_filename: "rhc-worker-bash.log"
+```
+
+### Can I change the location of rhc-worker bash config?
+
+No, not right now. If you want this feature please create an issue or upvote already existing issue.
