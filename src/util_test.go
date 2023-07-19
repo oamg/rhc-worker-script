@@ -82,78 +82,107 @@ func TestWriteFileToTemporaryDir(t *testing.T) {
 	}
 }
 
-func TestGetEnv(t *testing.T) {
-	// Test case 1: When the environment variable exists
-	key := "MY_VARIABLE"
-	fallback := "default"
-	expected := "my-value"
-	os.Setenv(key, expected)
-	defer os.Unsetenv(key)
+// Helper function to create a temporary YAML file with the given content and return its path.
+func createTempYAMLFile(content string) (string, error) {
+	tempFile, err := os.CreateTemp("", "config_test_*.yaml")
+	if err != nil {
+		return "", err
+	}
+	defer tempFile.Close()
 
-	result := getEnv(key, fallback)
-	if result != expected {
-		t.Errorf("Expected %s, but got %s", expected, result)
+	if _, err := tempFile.WriteString(content); err != nil {
+		return "", err
 	}
 
-	// Test case 2: When the environment variable does not exist
-	key = "NON_EXISTENT_VARIABLE"
-	expected = fallback
+	return tempFile.Name(), nil
+}
 
-	result = getEnv(key, fallback)
-	if result != expected {
-		t.Errorf("Expected %s, but got %s", expected, result)
+func TestLoadConfigOrDefault(t *testing.T) {
+	expectedConfig := &Config{
+		Directive:                strPtr("rhc-worker-bash"),
+		VerifyYAML:               boolPtr(true),
+		InsightsCoreGPGCheck:     boolPtr(true),
+		LogFileName:              strPtr("rhc-worker-bash.log"),
+		LogDir:                   strPtr("/var/log/rhc-worker-bash"),
+		TemporaryWorkerDirectory: strPtr("/var/lib/rhc-worker-bash"),
+	}
+	// Test case 1: No config present, defaults set
+	config := loadConfigOrDefault("foo-bar")
+
+	if !compareConfigs(config, expectedConfig) {
+		t.Errorf("Loaded config does not match expected config")
+	}
+
+	// Test case 2: Valid YAML file with all values present
+	yamlData := `
+directive: "rhc-worker-bash"
+verify_yaml: true
+verify_yaml_version_check: true
+insights_core_gpg_check: true
+log_dir: "/var/log/rhc-worker-bash"
+log_filename: "rhc-worker-bash.log"
+temporary_worker_directory: "/var/lib/rhc-worker-bash"
+`
+	filePath, err := createTempYAMLFile(yamlData)
+	if err != nil {
+		t.Fatalf("Failed to create temporary YAML file: %v", err)
+	}
+	defer os.Remove(filePath)
+
+	config = loadConfigOrDefault(filePath)
+
+	if !compareConfigs(config, expectedConfig) {
+		t.Errorf("Loaded config does not match expected config")
+	}
+
+	// Test case 3: Valid YAML file with missing values
+	yamlData = `
+directive: "rhc-worker-bash"
+`
+	filePath, err = createTempYAMLFile(yamlData)
+	if err != nil {
+		t.Fatalf("Failed to create temporary YAML file: %v", err)
+	}
+	defer os.Remove(filePath)
+
+	config = loadConfigOrDefault(filePath)
+
+	if !compareConfigs(config, expectedConfig) {
+		t.Errorf("Loaded config does not match expected config")
+	}
+
+	// Test case 4: Invalid YAML file - default config created
+	yamlData = `
+invalid_yaml_data
+`
+	filePath, err = createTempYAMLFile(yamlData)
+	if err != nil {
+		t.Fatalf("Failed to create temporary YAML file: %v", err)
+	}
+	defer os.Remove(filePath)
+
+	config = loadConfigOrDefault(filePath)
+
+	if !compareConfigs(config, expectedConfig) {
+		t.Errorf("Loaded config does not match expected config")
 	}
 }
 
-func TestInitializeEnvironment(t *testing.T) {
-	originalValue, existed := os.LookupEnv("YGG_SOCKET_ADDR")
+// Helper function to compare two Config structs.
+func compareConfigs(c1, c2 *Config) bool {
+	return *c1.Directive == *c2.Directive &&
+		*c1.VerifyYAML == *c2.VerifyYAML &&
+		*c1.InsightsCoreGPGCheck == *c2.InsightsCoreGPGCheck &&
+		*c1.LogDir == *c2.LogDir &&
+		*c1.LogFileName == *c2.LogFileName &&
+		*c1.TemporaryWorkerDirectory == *c2.TemporaryWorkerDirectory
+}
 
-	// Test case 1: default values with properly set YGG_SOCKET_ADDR
-	expectedYggdDispatchSocketAddr := "example.com"
-	os.Setenv("YGG_SOCKET_ADDR", expectedYggdDispatchSocketAddr)
+// Helper functions for creating pointers to string and bool values.
+func strPtr(s string) *string {
+	return &s
+}
 
-	ok, errorMsg := initializeEnvironment()
-
-	expectedValues := []struct {
-		name     string
-		got      string
-		expected string
-	}{
-		{"yggdDispatchSocketAddr", yggdDispatchSocketAddr, expectedYggdDispatchSocketAddr},
-		{"logFolder", logFolder, "/var/log/rhc-worker-bash"},
-		{"logFileName", logFileName, "rhc-worker-bash.log"},
-		{"temporaryWorkerDirectory", temporaryWorkerDirectory, "/var/lib/rhc-worker-bash"},
-		{"shouldDoInsightsCoreGPGCheck", shouldDoInsightsCoreGPGCheck, "1"},
-		{"shouldVerifyYaml", shouldVerifyYaml, "1"},
-	}
-
-	for _, value := range expectedValues {
-		if value.got != value.expected {
-			t.Errorf("Expected %s to be %s, but got %s", value.name, value.expected, value.got)
-		}
-	}
-
-	if errorMsg != "" {
-		t.Errorf("Expected returned error message to be empty")
-	}
-	if !ok {
-		t.Errorf("Expected returned status to be true")
-	}
-
-	// Test case 2: default values with missing YGG_SOCKET_ADDR
-
-	os.Unsetenv("YGG_SOCKET_ADDR")
-	ok, errorMsg = initializeEnvironment()
-	if errorMsg == "" {
-		t.Errorf("Expected non-empty error message")
-	}
-	if ok {
-		t.Errorf("Expected returned status to be false")
-	}
-
-	defer func() {
-		if existed {
-			os.Setenv("YGG_SOCKET_ADDR", originalValue)
-		}
-	}()
+func boolPtr(b bool) *bool {
+	return &b
 }

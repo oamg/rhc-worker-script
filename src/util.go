@@ -10,30 +10,8 @@ import (
 	"os"
 
 	"git.sr.ht/~spc/go-log"
+	"gopkg.in/yaml.v3"
 )
-
-// Calls os.LookupEnv for key, if not found then fallback value is returned
-func getEnv(key, fallback string) string {
-	if value, ok := os.LookupEnv(key); ok {
-		return value
-	}
-	return fallback
-}
-
-// Set initialization values from the environment variables
-func initializeEnvironment() (bool, string) {
-	var yggSocketAddrExists bool // Has to be separately declared otherwise grpc.Dial doesn't work
-	yggdDispatchSocketAddr, yggSocketAddrExists = os.LookupEnv("YGG_SOCKET_ADDR")
-	if !yggSocketAddrExists {
-		return false, "Missing YGG_SOCKET_ADDR environment variable"
-	}
-	logFolder = getEnv("RHC_WORKER_LOG_FOLDER", "/var/log/rhc-worker-bash")
-	logFileName = getEnv("RHC_WORKER_LOG_FILENAME", "rhc-worker-bash.log")
-	temporaryWorkerDirectory = getEnv("RHC_WORKER_TMP_DIR", "/var/lib/rhc-worker-bash")
-	shouldDoInsightsCoreGPGCheck = getEnv("RHC_WORKER_GPG_CHECK", "1")
-	shouldVerifyYaml = getEnv("RHC_WORKER_VERIFY_YAML", "1")
-	return true, ""
-}
 
 // writeFileToTemporaryDir writes the provided data to a temporary file in the
 // designated temporary worker directory. It creates the directory if it doesn't exist.
@@ -112,4 +90,81 @@ func constructMetadata(receivedMetadata map[string]string, contentType string) m
 		ourMetadata[k] = v
 	}
 	return ourMetadata
+}
+
+// Struc used fro worker global config
+type Config struct {
+	Directive                *string `yaml:"directive,omitempty"`
+	VerifyYAML               *bool   `yaml:"verify_yaml,omitempty"`
+	InsightsCoreGPGCheck     *bool   `yaml:"insights_core_gpg_check,omitempty"`
+	TemporaryWorkerDirectory *string `yaml:"temporary_worker_directory,omitempty"`
+	LogDir                   *string `yaml:"log_dir,omitempty"`
+	LogFileName              *string `yaml:"log_filename,omitempty"`
+}
+
+// Set default values for the Config struct
+func setDefaultValues(config *Config) {
+	// Set default values for string and boolean fields if they are nil (not present in the YAML)
+	if config.Directive == nil {
+		defaultDirectiveValue := "rhc-worker-bash"
+		config.Directive = &defaultDirectiveValue
+	}
+
+	if config.VerifyYAML == nil {
+		defaultVerifyYamlValue := true
+		config.VerifyYAML = &defaultVerifyYamlValue
+	}
+
+	if config.InsightsCoreGPGCheck == nil {
+		defaultGpgCheckValue := true
+		config.InsightsCoreGPGCheck = &defaultGpgCheckValue
+	}
+
+	if config.TemporaryWorkerDirectory == nil {
+		defaultTemporaryWorkerDirectoryValue := "/var/lib/rhc-worker-bash"
+		config.TemporaryWorkerDirectory = &defaultTemporaryWorkerDirectoryValue
+	}
+
+	if config.LogDir == nil {
+		defaultLogFolder := "/var/log/rhc-worker-bash"
+		config.LogDir = &defaultLogFolder
+	}
+
+	if config.LogFileName == nil {
+		defaultLogFilename := "rhc-worker-bash.log"
+		config.LogFileName = &defaultLogFilename
+	}
+}
+
+// Load yaml config, if file doesn't exist or is invalid yaml then empty COnfig is returned
+func loadYAMLConfig(filePath string) *Config {
+	var config Config
+
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		log.Error(err)
+	}
+
+	if err := yaml.Unmarshal(data, &config); err != nil {
+		log.Error(err)
+	}
+
+	return &config
+}
+
+// Load config from given filepath, if config doesn't exist then default config values are used
+// Directive = rhc-worker-bash
+// VerifyYAML = "1"
+// InsightsCoreGPGCheck = "1"
+func loadConfigOrDefault(filePath string) *Config {
+	config := &Config{}
+	_, err := os.Stat(filePath)
+	if err == nil {
+		// File exists, load configuration from YAML
+		config = loadYAMLConfig(filePath)
+	}
+
+	// File doesn't exist, create a new Config with default values
+	setDefaultValues(config)
+	return config
 }

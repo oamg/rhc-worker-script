@@ -10,8 +10,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Received Yaml data has to match the expected yamlConfig structure
-type yamlConfig struct {
+// Received Yaml data has to match the expected signedYamlFile structure
+type signedYamlFile struct {
 	Vars struct {
 		InsightsSignature        string            `yaml:"_insights_signature"`
 		InsightsSignatureExclude string            `yaml:"_insights_signature_exclude"`
@@ -23,7 +23,7 @@ type yamlConfig struct {
 // Verify that no one tampered with yaml file
 func verifyYamlFile(yamlData []byte) bool {
 
-	if shouldVerifyYaml != "1" {
+	if !*config.VerifyYAML {
 		log.Warnln("WARNING: Playbook verification disabled.")
 		return true
 	}
@@ -38,7 +38,7 @@ func verifyYamlFile(yamlData []byte) bool {
 	}
 	env := os.Environ()
 
-	if shouldDoInsightsCoreGPGCheck == "0" {
+	if !*config.InsightsCoreGPGCheck {
 		args = append(args, "--no-gpg")
 		env = append(env, "BYPASS_GPG=True")
 	}
@@ -81,7 +81,7 @@ func processSignedScript(yamlFileContet []byte) string {
 	log.Infoln("Signature of yaml file is valid")
 
 	// Parse the YAML data into the yamlConfig struct
-	var yamlContent yamlConfig
+	var yamlContent signedYamlFile
 	err := yaml.Unmarshal(yamlFileContet, &yamlContent)
 	if err != nil {
 		log.Errorln(err)
@@ -117,7 +117,8 @@ func processSignedScript(yamlFileContet []byte) string {
 
 	// Write the file contents to the temporary disk
 	log.Infoln("Writing temporary bash script")
-	scriptFileName := writeFileToTemporaryDir([]byte(yamlContent.Vars.Content), temporaryWorkerDirectory)
+	scriptFileName := writeFileToTemporaryDir(
+		[]byte(yamlContent.Vars.Content), *config.TemporaryWorkerDirectory)
 	defer os.Remove(scriptFileName)
 
 	// Execute the script

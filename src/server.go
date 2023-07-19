@@ -65,7 +65,8 @@ func (s *jobServer) Send(ctx context.Context, d *pb.Data) (*pb.Receipt, error) {
 		commandOutput := processSignedScript(d.GetContent())
 
 		// Dial the Dispatcher and call "Finish"
-		conn, err := grpc.Dial(yggdDispatchSocketAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		conn, err := grpc.Dial(
+			yggdDispatchSocketAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			log.Error(err)
 		}
@@ -78,7 +79,8 @@ func (s *jobServer) Send(ctx context.Context, d *pb.Data) (*pb.Receipt, error) {
 
 		// Create a data message to send back to the dispatcher.
 		log.Infof("Creating payload for message %s", d.GetMessageId())
-		data := createDataMessage(commandOutput, d.GetMetadata(), d.GetDirective(), d.GetMessageId())
+		data := createDataMessage(
+			commandOutput, d.GetMetadata(), d.GetDirective(), d.GetMessageId())
 
 		// Call "Send"
 		log.Infof("Sending message to %s", d.GetMessageId())
