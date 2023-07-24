@@ -33,7 +33,7 @@ func main() {
 	config = loadConfigOrDefault(configFilePath)
 	log.Infoln("Configuration loaded: ", config)
 
-	logFile := setupLogger(*config.LogDir, *config.LogDir)
+	logFile := setupLogger(*config.LogDir, *config.LogFileName)
 	defer logFile.Close()
 
 	// Dial the dispatcher on its well-known address.
