@@ -18,6 +18,7 @@ PYTHON ?= python3
 PIP ?= pip3
 VENV ?= .venv3
 PRE_COMMIT ?= pre-commit
+GO_VERSION ?= 1.16
 
 ifdef KEEP_TEST_CONTAINER
 	CONTAINER_RM =
@@ -67,7 +68,7 @@ test:
 	go test -coverprofile=coverage.out ./...
 
 test-container:
-	podman run --replace --name go-test-container $(CONTAINER_RM) -v $(shell pwd):/app:Z -w /app docker.io/golang:1.20 make test
+	podman run --replace --name go-test-container $(CONTAINER_RM) -v $(shell pwd):/app:Z -w /app docker.io/golang:$(GO_VERSION) make test
 
 coverage: test
 	go tool cover -func=coverage.out
