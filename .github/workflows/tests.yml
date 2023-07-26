@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go-version: ['1.20']
+        go-version: ['1.16', '1.20']
     steps:
       - uses: actions/checkout@v3
 
@@ -21,12 +21,9 @@ jobs:
         with:
           go-version: ${{ matrix.go-version }}
 
-      - name: Go build (source)
-        run: make
-
-      - name: Go build (tests)
+      - name: Run unit tests
         run: |
-          make test-container KEEP_TEST_CONTAINER=1
+          make test-container KEEP_TEST_CONTAINER=1 GO_VERSION=${{ matrix.go-version }}
           podman cp go-test-container:/app/coverage.out .
 
       - name: Upload coverage to Codecov
