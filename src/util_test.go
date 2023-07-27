@@ -102,8 +102,6 @@ func TestLoadConfigOrDefault(t *testing.T) {
 		Directive:                strPtr("rhc-worker-bash"),
 		VerifyYAML:               boolPtr(true),
 		InsightsCoreGPGCheck:     boolPtr(true),
-		LogFileName:              strPtr("rhc-worker-bash.log"),
-		LogDir:                   strPtr("/var/log/rhc-worker-bash"),
 		TemporaryWorkerDirectory: strPtr("/var/lib/rhc-worker-bash"),
 	}
 	// Test case 1: No config present, defaults set
@@ -119,8 +117,6 @@ directive: "rhc-worker-bash"
 verify_yaml: true
 verify_yaml_version_check: true
 insights_core_gpg_check: true
-log_dir: "/var/log/rhc-worker-bash"
-log_filename: "rhc-worker-bash.log"
 temporary_worker_directory: "/var/lib/rhc-worker-bash"
 `
 	filePath, err := createTempYAMLFile(yamlData)
@@ -173,8 +169,6 @@ func compareConfigs(c1, c2 *Config) bool {
 	return *c1.Directive == *c2.Directive &&
 		*c1.VerifyYAML == *c2.VerifyYAML &&
 		*c1.InsightsCoreGPGCheck == *c2.InsightsCoreGPGCheck &&
-		*c1.LogDir == *c2.LogDir &&
-		*c1.LogFileName == *c2.LogFileName &&
 		*c1.TemporaryWorkerDirectory == *c2.TemporaryWorkerDirectory
 }
 
