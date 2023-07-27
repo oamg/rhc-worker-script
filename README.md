@@ -13,7 +13,7 @@ managed by Red Hat Insights.
     - [Bash script example](#bash-script-example)
   - [FAQ](#faq)
     - [Are there special environment variables used by `rhc-worker-bash`?](#are-there-special-environment-variables-used-by-rhc-worker-bash)
-    - [Can I change behavior of `rhc-worker-bash`? e.g. different destination for logs?](#can-i-change-behavior-of-rhc-worker-bash-eg-different-destination-for-logs)
+    - [Can I change behavior of `rhc-worker-bash`?](#can-i-change-behavior-of-rhc-worker-bash)
     - [Can I change the location of `rhc-worker-bash` config?](#can-i-change-the-location-of-rhc-worker-bash-config)
   - [Contact](#contact)
     - [Package maintainers](#package-maintainers)
@@ -100,7 +100,7 @@ There is one special variable that must be set in order to run our worker and th
 
 Other than that there are no special variables, however if downloaded yaml file contained `content_vars` (like the example above), then before the execution of the bash script (`content`) all such variables are set as environment variables and prefixed with `RHC_WORKER_`, after script execution is done they are unset.
 
-### Can I change behavior of `rhc-worker-bash`? e.g. different destination for logs?
+### Can I change behavior of `rhc-worker-bash`?
 
 Yes, some values can be changed if config exists at `/etc/rhc/workers/rhc-worker-bash.yml`, **the config must have valid yaml format**, see all available fields below.
 
@@ -120,10 +120,6 @@ insights_core_gpg_check: true
 
 # temporary directory in which the temporary files with executed bash scripts are created
 temporary_worker_directory: "/var/lib/rhc-worker-bash"
-
-# Options to adjust name and directory for worker logs
-log_dir: "/var/log/rhc-worker-bash"
-log_filename: "rhc-worker-bash.log"
 ```
 
 ### Can I change the location of `rhc-worker-bash` config?

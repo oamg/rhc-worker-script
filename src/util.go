@@ -98,8 +98,6 @@ type Config struct {
 	VerifyYAML               *bool   `yaml:"verify_yaml,omitempty"`
 	InsightsCoreGPGCheck     *bool   `yaml:"insights_core_gpg_check,omitempty"`
 	TemporaryWorkerDirectory *string `yaml:"temporary_worker_directory,omitempty"`
-	LogDir                   *string `yaml:"log_dir,omitempty"`
-	LogFileName              *string `yaml:"log_filename,omitempty"`
 }
 
 // Set default values for the Config struct
@@ -124,19 +122,9 @@ func setDefaultValues(config *Config) {
 		defaultTemporaryWorkerDirectoryValue := "/var/lib/rhc-worker-bash"
 		config.TemporaryWorkerDirectory = &defaultTemporaryWorkerDirectoryValue
 	}
-
-	if config.LogDir == nil {
-		defaultLogFolder := "/var/log/rhc-worker-bash"
-		config.LogDir = &defaultLogFolder
-	}
-
-	if config.LogFileName == nil {
-		defaultLogFilename := "rhc-worker-bash.log"
-		config.LogFileName = &defaultLogFilename
-	}
 }
 
-// Load yaml config, if file doesn't exist or is invalid yaml then empty COnfig is returned
+// Load yaml config, if file doesn't exist or is invalid yaml then empty Config is returned
 func loadYAMLConfig(filePath string) *Config {
 	var config Config
 

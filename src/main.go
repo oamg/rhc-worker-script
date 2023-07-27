@@ -15,6 +15,8 @@ import (
 
 // Initialized in main
 const configFilePath = "/etc/rhc/workers/rhc-worker-bash.yml"
+const logDir = "/var/log/rhc-worker-bash"
+const logFileName = "rhc-worker-bash.log"
 
 var yggdDispatchSocketAddr string
 var config *Config
@@ -33,7 +35,7 @@ func main() {
 	config = loadConfigOrDefault(configFilePath)
 	log.Infoln("Configuration loaded: ", config)
 
-	logFile := setupLogger(*config.LogDir, *config.LogFileName)
+	logFile := setupLogger(logDir, logFileName)
 	defer logFile.Close()
 
 	// Dial the dispatcher on its well-known address.
