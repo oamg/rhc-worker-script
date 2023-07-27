@@ -10,12 +10,14 @@
 %{!?_root_sysconfdir:%global _root_sysconfdir %{_sysconfdir}}
 %global rhc_worker_conf_dir %{_root_sysconfdir}/rhc/workers
 
-%define gobuild(o:) GO111MODULE=off go build -buildmode pie -compiler gc -tags="rpm_crashtraceback ${BUILDTAGS:-}" -ldflags "${LDFLAGS:-} -linkmode=external -B 0x$(head -c20 /dev/urandom|od -An -tx1|tr -d ' \\n') -extldflags '-Wl,-z,relro -Wl,-z,now -specs=/usr/lib/rpm/redhat/redhat-hardened-ld '" -a -v %{?**};
+%define gobuild(o:) env GO111MODULE=off go build -buildmode pie -compiler gc -tags="rpm_crashtraceback ${BUILDTAGS:-}" -ldflags "${LDFLAGS:-} -linkmode=external -B 0x$(head -c20 /dev/urandom|od -An -tx1|tr -d ' \\n') -extldflags '-Wl,-z,relro -Wl,-z,now -specs=/usr/lib/rpm/redhat/redhat-hardened-ld '" -a -v %{?**}
 
-# EL7 doesn't define go_arche (it is available in go-srpm-macros which is EL8+)s
-%if ! 0%{?go_arches:1}
-%define go_arches %{ix86} x86_64 %{arm} aarch64 ppc64le
+# EL7 doesn't define go_arches (it is available in go-srpm-macros which is EL8+)
+%if !%{defined go_arches}
+%define go_arches x86_64 s390x ppc64le
 %endif
+
+%global use_go_toolset_1_16 0%{?rhel} == 7 && !%{defined centos}
 
 Name:           %{repo_name}
 Version:        0.2
@@ -27,7 +29,11 @@ URL:            https://github.com/%{repo_orgname}/%{repo_name}
 Source0:        %{url}/archive/v%{version}/%{name}-%{version}.tar.gz
 ExclusiveArch:  %{go_arches}
 
+%if %{use_go_toolset_1_16}
+BuildRequires:  go-toolset-1.16-golang
+%else
 BuildRequires:  golang
+%endif
 Requires:       rhc
 
 %description
@@ -43,7 +49,11 @@ ln -fs $(pwd)/src _gopath/src/%{binary_name}-%{version}
 ln -fs $(pwd)/vendor _gopath/src/%{binary_name}-%{version}/vendor
 export GOPATH=$(pwd)/_gopath
 pushd _gopath/src/%{binary_name}-%{version}
+%if %{use_go_toolset_1_16}
+scl enable go-toolset-1.16 -- %{gobuild}
+%else
 %{gobuild}
+%endif
 strip %{binary_name}-%{version}
 popd
 
