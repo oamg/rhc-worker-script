@@ -9,66 +9,89 @@ import (
 )
 
 func TestCreateDataMessage(t *testing.T) {
-	// Test case 1: commandOutput is not empty
-	commandOutput := "Output of the command"
-	metadata := map[string]string{
-		"correlation_id":      "123",
-		"return_content_type": "application/json",
-		"return_url":          "example.com",
+	testCases := []struct {
+		name                  string
+		commandOutput         string
+		metadata              map[string]string
+		directive             string
+		messageID             string
+		expectedCorrelationID string
+		expectedMessageType   string
+		expectedDirective     string
+		expectedMessageID     string
+	}{
+		{
+			name:          "commandOutput is not empty",
+			commandOutput: "Output of the command",
+			metadata: map[string]string{
+				"correlation_id":      "123",
+				"return_content_type": "application/json",
+				"return_url":          "example.com",
+			},
+			directive:             "Directive value",
+			messageID:             "Message ID",
+			expectedCorrelationID: "123",
+			expectedMessageType:   "multipart/form-data",
+			expectedDirective:     "example.com",
+			expectedMessageID:     "Message ID",
+		},
+		{
+			name:          "commandOutput is empty",
+			commandOutput: "",
+			metadata: map[string]string{
+				"correlation_id":      "456",
+				"return_content_type": "text/plain",
+				"return_url":          "example.org",
+			},
+			directive:             "Another directive",
+			messageID:             "Another message ID",
+			expectedCorrelationID: "456",
+			expectedMessageType:   "multipart/form-data",
+			expectedDirective:     "Another directive",
+			expectedMessageID:     "Another message ID",
+		},
 	}
-	directive := "Directive value"
-	messageID := "Message ID"
 
-	data := createDataMessage(commandOutput, metadata, directive, messageID)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			data := createDataMessage(tc.commandOutput, tc.metadata, tc.directive, tc.messageID)
 
-	expectedCorrelationID := "123"
-	if data.Metadata["correlation_id"] != expectedCorrelationID {
-		t.Errorf("Expected correlation_id to be %s, but got %s", expectedCorrelationID, data.Metadata["correlation_id"])
-	}
+			if tc.commandOutput == "" {
+				// Checks for commandOutput being empty
+				if data.Directive != tc.directive {
+					t.Errorf("Expected Directive to be %s, but got %s", tc.directive, data.Directive)
+				}
+				if string(data.Content) != "" {
+					t.Errorf("Expected Content to be empty, but got %s", data.Content)
+				}
+			} else {
+				// Checks for commandOutput being non-empty
+				if data.Metadata["correlation_id"] != tc.expectedCorrelationID {
+					t.Errorf("Expected correlation_id to be %s, but got %s", tc.expectedCorrelationID, data.Metadata["correlation_id"])
+				}
 
-	expectedMessageType := "multipart/form-data"
-	if !strings.HasPrefix(data.Metadata["Content-Type"], expectedMessageType) {
-		t.Errorf("Expected Content-Type to have prefix %s, but got %s", expectedMessageType, data.Metadata["Content-Type"])
-	}
+				expectedMessageType := "multipart/form-data"
+				if !strings.HasPrefix(data.Metadata["Content-Type"], expectedMessageType) {
+					t.Errorf("Expected Content-Type to have prefix %s, but got %s", expectedMessageType, data.Metadata["Content-Type"])
+				}
 
-	expectedDirective := "example.com"
-	if data.Directive != expectedDirective {
-		t.Errorf("Expected Directive to be %s, but got %s", expectedDirective, data.Directive)
-	}
+				if data.Directive != tc.expectedDirective {
+					t.Errorf("Expected Directive to be %s, but got %s", tc.expectedDirective, data.Directive)
+				}
 
-	expectedMessageID := messageID
-	if data.ResponseTo != expectedMessageID {
-		t.Errorf("Expected ResponseTo to be %s, but got %s", expectedMessageID, data.ResponseTo)
-	}
-
-	commandOutput = ""
-	data = createDataMessage(commandOutput, metadata, directive, messageID)
-	if data.Directive != directive {
-		t.Errorf("Expected Directive to be %s, but got %s", directive, data.Directive)
-	}
-	if string(data.Content) != "" {
-		t.Errorf("Expected Content to be empty, but got %s", data.Content)
+				if data.ResponseTo != tc.expectedMessageID {
+					t.Errorf("Expected ResponseTo to be %s, but got %s", tc.expectedMessageID, data.ResponseTo)
+				}
+			}
+		})
 	}
 }
 
 func TestProcessData(t *testing.T) {
-	// FIXME: this should ideally test that all correct functions are called
-	// Probably easiest would be to move them to interface and then make the function argument take mock interface
-	yggdDispatchSocketAddr = "mock-target"
-
-	shouldVerifyYaml := false
-	shouldDoInsightsCoreGPGCheck := false
-	temporaryWorkerDirectory := "test-dir"
-	config = &Config{
-		VerifyYAML:               &shouldVerifyYaml,
-		TemporaryWorkerDirectory: &temporaryWorkerDirectory,
-		InsightsCoreGPGCheck:     &shouldDoInsightsCoreGPGCheck,
-	}
-
-	yamlData := []byte(`
+	testYAMLData := []byte(`
 vars:
-    _insights_signature: "invalid-signature"
-    _insights_signature_exclude: "/vars/insights_signature,/vars/content_vars"
+    insights_signature: "invalid-signature"
+    insights_signature_exclude: "/vars/insights_signature,/vars/content_vars"
     content: |
         #!/bin/sh
         echo "$RHC_WORKER_FOO $RHC_WORKER_BAR!"
@@ -76,42 +99,94 @@ vars:
         FOO: Hello
         BAR: World`)
 
-	returnURL := "bar"
-	testData := &pb.Data{
-		Content: yamlData,
-		Metadata: map[string]string{
-			"return_content_type": "foo",
-			"return_url":          returnURL,
-			"correlation_id":      "000",
+	testCases := []struct {
+		name                  string
+		yamlData              []byte
+		expectedOutput        string
+		expectedDirective     string
+		expectedReturnContent string
+	}{
+		{
+			name:                  "Expected data are present in result data",
+			yamlData:              testYAMLData,
+			expectedOutput:        "Hello World!",
+			expectedDirective:     "bar",
+			expectedReturnContent: "foo",
 		},
-		Directive: "Your directive",
-		MessageId: "Your message ID",
 	}
 
-	data := processData(testData)
-	expectedOutput := "Hello World!"
+	// Set the mock target address
+	yggdDispatchSocketAddr = "mock-target"
+	defer func() {
+		yggdDispatchSocketAddr = "" // Reset the mock target address after the tests
+	}()
 
-	if !strings.Contains(string(data.GetContent()), expectedOutput) {
-		t.Errorf("Expected content to contain '%s', but it didn't", expectedOutput)
-	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			shouldVerifyYaml := false
+			shouldDoInsightsCoreGPGCheck := false
+			temporaryWorkerDirectory := t.TempDir()
+			config = &Config{
+				VerifyYAML:               &shouldVerifyYaml,
+				TemporaryWorkerDirectory: &temporaryWorkerDirectory,
+				InsightsCoreGPGCheck:     &shouldDoInsightsCoreGPGCheck,
+			}
 
-	if data.GetDirective() != returnURL {
-		t.Errorf("Expected directive to contain '%s', but it didn't", returnURL)
+			returnURL := "bar"
+			testData := &pb.Data{
+				Content: tc.yamlData,
+				Metadata: map[string]string{
+					"return_content_type": "foo",
+					"return_url":          returnURL,
+					"correlation_id":      "000",
+				},
+				Directive: "Your directive",
+				MessageId: "Your message ID",
+			}
+
+			data := processData(testData)
+
+			if !strings.Contains(string(data.GetContent()), tc.expectedOutput) {
+				t.Errorf("Expected content to contain '%s', but it didn't", tc.expectedOutput)
+			}
+
+			if data.GetDirective() != tc.expectedDirective {
+				t.Errorf("Expected directive to contain '%s', but it didn't", tc.expectedDirective)
+			}
+
+			if data.GetMetadata()["return_content_type"] != tc.expectedReturnContent {
+				t.Errorf("Expected return content type to contain '%s', but it didn't", tc.expectedReturnContent)
+			}
+		})
 	}
 }
 
 func TestSendDataToDispatcher(t *testing.T) {
-	// Tests only that the function doesn't modify data sent to dispatcher
-
-	yggdDispatchSocketAddr = "mock-target"
-
-	testData := &pb.Data{
-		MessageId:  uuid.New().String(),
-		ResponseTo: "mock-id",
+	testCases := []struct {
+		name     string
+		testData *pb.Data
+	}{
+		{
+			name: "Data are not changed before sending them to dispatcher",
+			testData: &pb.Data{
+				MessageId:  uuid.New().String(),
+				ResponseTo: "mock-id",
+			},
+		},
 	}
 
-	data := sendDataToDispatcher(testData)
-	if data != testData {
-		t.Errorf("Function should NOT change data before sent, but it did: %s", data)
+	// Set the mock target address
+	yggdDispatchSocketAddr = "mock-target"
+	defer func() {
+		yggdDispatchSocketAddr = "" // Reset the mock target address after the tests
+	}()
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			data := sendDataToDispatcher(tc.testData)
+			if data != tc.testData {
+				t.Errorf("Function should NOT change data before sending, but it did: %s", data)
+			}
+		})
 	}
 }

@@ -7,85 +7,116 @@ import (
 )
 
 func TestProcessSignedScript(t *testing.T) {
-	shouldVerifyYaml := false
-	shouldDoInsightsCoreGPGCheck := false
-	temporaryWorkerDirectory := "test-dir"
-	config = &Config{
-		VerifyYAML:               &shouldVerifyYaml,
-		TemporaryWorkerDirectory: &temporaryWorkerDirectory,
-		InsightsCoreGPGCheck:     &shouldDoInsightsCoreGPGCheck,
-	}
-
-	defer os.RemoveAll(temporaryWorkerDirectory)
-
-	// Test case 1: verification disabled, no yaml data supplied = empty output
-	yamlData := []byte{}
-	expectedResult := ""
-	result := processSignedScript(yamlData)
-	if result != expectedResult {
-		t.Errorf("Expected %q, but got %q", expectedResult, result)
-	}
-
-	// Test case 2: verification disabled, yaml data supplied = non-empty output
-	yamlData = []byte(`
+	testCases := []struct {
+		name           string
+		verifyYAML     bool
+		yamlData       []byte
+		expectedResult string
+	}{
+		{
+			name:           "verification disabled, no yaml data supplied = empty output",
+			verifyYAML:     false,
+			yamlData:       []byte{},
+			expectedResult: "",
+		},
+		{
+			name:       "verification disabled, yaml data supplied = non-empty output",
+			verifyYAML: false,
+			yamlData: []byte(`
 vars:
-    _insights_signature: "invalid-signature"
-    _insights_signature_exclude: "/vars/insights_signature,/vars/content_vars"
+    insights_signature: "invalid-signature"
+    insights_signature_exclude: "/vars/insights_signature,/vars/content_vars"
     content: |
         #!/bin/sh
         echo "$RHC_WORKER_FOO $RHC_WORKER_BAR!"
     content_vars:
         FOO: Hello
-        BAR: World`)
-	expectedResult = "Hello World!\n"
-	result = processSignedScript(yamlData)
-	if result != expectedResult {
-		t.Errorf("Expected %q, but got %q", expectedResult, result)
+        BAR: World`),
+			expectedResult: "Hello World!\n",
+		},
+		{
+			name:       "verification enabled, invalid signature = error msg returned",
+			verifyYAML: true,
+			yamlData: []byte(`
+vars:
+    insights_signature: "invalid-signature"
+    insights_signature_exclude: "/vars/insights_signature,/vars/content_vars"
+    content: |
+        #!/bin/sh
+        echo "$RHC_WORKER_FOO $RHC_WORKER_BAR!"
+    content_vars:
+        FOO: Hello
+        BAR: World`),
+			expectedResult: "Signature of yaml file is invalid",
+		},
 	}
 
-	// FIXME: This is false success because verification fails on missing insighs-client
-	// Test case 3: verification enabled, invalid signature = error msg returned
-	shouldVerifyYaml = true
-	shouldDoInsightsCoreGPGCheck = true
-	expectedResult = "Signature of yaml file is invalid"
-	result = processSignedScript(yamlData)
-	if result != expectedResult {
-		t.Errorf("Expected %q, but got %q", expectedResult, result)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			shouldVerifyYaml := tc.verifyYAML
+			shouldDoInsightsCoreGPGCheck := tc.verifyYAML // Assume the same value for simplicity
+			temporaryWorkerDirectory := t.TempDir()
+			config = &Config{
+				VerifyYAML:               &shouldVerifyYaml,
+				TemporaryWorkerDirectory: &temporaryWorkerDirectory,
+				InsightsCoreGPGCheck:     &shouldDoInsightsCoreGPGCheck,
+			}
+
+			defer os.RemoveAll(temporaryWorkerDirectory)
+
+			result := processSignedScript(tc.yamlData)
+			if result != tc.expectedResult {
+				t.Errorf("Expected %q, but got %q", tc.expectedResult, result)
+			}
+		})
 	}
 }
 
 func TestVerifyYamlFile(t *testing.T) {
-	shouldVerifyYaml := false
-	shouldDoInsightsCoreGPGCheck := false
-
-	config = &Config{
-		VerifyYAML:           &shouldVerifyYaml,
-		InsightsCoreGPGCheck: &shouldDoInsightsCoreGPGCheck,
+	testCases := []struct {
+		name           string
+		verifyYAML     bool
+		yamlData       []byte
+		expectedResult bool
+	}{
+		{
+			name:           "verification disabled",
+			verifyYAML:     false,
+			yamlData:       []byte{},
+			expectedResult: true,
+		},
+		// FIXME: This should succedd but now verification fails on missing insighs-client
+		// We also need valid signature
+		{
+			name:           "verification enabled and verification succeeds",
+			verifyYAML:     true,
+			yamlData:       []byte("valid-yaml"),
+			expectedResult: false,
+		},
+		// FIXME: Valid test case but fails because of missing insights-client
+		{
+			name:           "verification is enabled and verification fails",
+			verifyYAML:     true,
+			yamlData:       []byte("invalid-yaml"),
+			expectedResult: false,
+		},
 	}
-	// Test case 1: verification disabled
-	expectedResult := true
-	result := verifyYamlFile([]byte{})
-	if result != expectedResult {
-		t.Errorf("Expected %v, but got %v", expectedResult, result)
-	}
 
-	// Test case 2: verification enabled and verification succeeds
-	shouldVerifyYaml = true
-	// FIXME: This should succedd but now verification fails on missing insighs-client
-	// We also need valid signature
-	expectedResult = false
-	result = verifyYamlFile([]byte("valid-yaml"))
-	if result != expectedResult {
-		t.Errorf("Expected %v, but got %v", expectedResult, result)
-	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			shouldVerifyYaml := tc.verifyYAML
+			shouldDoInsightsCoreGPGCheck := false // Reset to false for each test case
 
-	// FIXME: Valid test case but fails because of missing insights-client
-	// Test case 3: sverification is enabled and verification fails
-	// shouldVerifyYaml = true
-	expectedResult = false
-	result = verifyYamlFile([]byte("invalid-yaml")) // Replace with your YAML data
-	if result != expectedResult {
-		t.Errorf("Expected %v, but got %v", expectedResult, result)
+			config = &Config{
+				VerifyYAML:           &shouldVerifyYaml,
+				InsightsCoreGPGCheck: &shouldDoInsightsCoreGPGCheck,
+			}
+
+			result := verifyYamlFile(tc.yamlData)
+			if result != tc.expectedResult {
+				t.Errorf("Expected %v, but got %v", tc.expectedResult, result)
+			}
+		})
 	}
 }
 
