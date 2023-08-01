@@ -20,6 +20,13 @@ type signedYamlFile struct {
 	} `yaml:"vars"`
 }
 
+var verificationCommand = "insights-client"
+
+var verificationArgs = []string{
+	"-m", "insights.client.apps.ansible.playbook_verifier",
+	"--quiet", "--payload", "noop", "--content-type", "noop",
+}
+
 // Verify that no one tampered with yaml file
 func verifyYamlFile(yamlData []byte) bool {
 
@@ -31,18 +38,14 @@ func verifyYamlFile(yamlData []byte) bool {
 	// --payload here will be a no-op because no upload is performed when using the verifier
 	//   but, it will allow us to update the egg!
 
-	args := []string{
-		"-m", "insights.client.apps.ansible.playbook_verifier",
-		"--quiet", "--payload", "noop", "--content-type", "noop",
-	}
 	env := os.Environ()
 
 	if !*config.InsightsCoreGPGCheck {
-		args = append(args, "--no-gpg")
+		verificationArgs = append(verificationArgs, "--no-gpg")
 		env = append(env, "BYPASS_GPG=True")
 	}
 
-	cmd := exec.Command("insights-client", args...)
+	cmd := exec.Command(verificationCommand, verificationArgs...)
 	cmd.Env = env
 	stdin, err := cmd.StdinPipe()
 	if err != nil {

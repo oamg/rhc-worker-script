@@ -74,38 +74,47 @@ vars:
 
 func TestVerifyYamlFile(t *testing.T) {
 	testCases := []struct {
-		name           string
-		verifyYAML     bool
-		yamlData       []byte
-		expectedResult bool
+		name                         string
+		yamlData                     []byte
+		verifyYAML                   bool
+		verificationCommand          string
+		verificationArgs             []string
+		shouldDoInsightsCoreGPGCheck bool
+		expectedResult               bool
 	}{
 		{
-			name:           "verification disabled",
-			verifyYAML:     false,
-			yamlData:       []byte{},
-			expectedResult: true,
+			name:                         "verification disabled",
+			verifyYAML:                   false,
+			yamlData:                     []byte{},
+			shouldDoInsightsCoreGPGCheck: false,
+			expectedResult:               true,
 		},
-		// FIXME: This should succedd but now verification fails on missing insighs-client
-		// We also need valid signature
 		{
-			name:           "verification enabled and verification succeeds",
-			verifyYAML:     true,
-			yamlData:       []byte("valid-yaml"),
-			expectedResult: false,
+			name:                         "verification enabled and verification succeeds",
+			verifyYAML:                   true,
+			yamlData:                     []byte("valid-yaml"),
+			verificationCommand:          "true",
+			verificationArgs:             []string{},
+			shouldDoInsightsCoreGPGCheck: false,
+			expectedResult:               true,
 		},
-		// FIXME: Valid test case but fails because of missing insights-client
 		{
-			name:           "verification is enabled and verification fails",
-			verifyYAML:     true,
-			yamlData:       []byte("invalid-yaml"),
-			expectedResult: false,
+			name:                         "verification is enabled and verification fails",
+			verifyYAML:                   true,
+			yamlData:                     []byte("invalid-yaml"),
+			verificationCommand:          "false",
+			verificationArgs:             []string{},
+			shouldDoInsightsCoreGPGCheck: false,
+			expectedResult:               false,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			shouldVerifyYaml := tc.verifyYAML
-			shouldDoInsightsCoreGPGCheck := false // Reset to false for each test case
+			shouldDoInsightsCoreGPGCheck := tc.shouldDoInsightsCoreGPGCheck
+			verificationCommand = tc.verificationCommand
+			verificationArgs = tc.verificationArgs
 
 			config = &Config{
 				VerifyYAML:           &shouldVerifyYaml,
