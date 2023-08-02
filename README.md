@@ -10,7 +10,9 @@ managed by Red Hat Insights.
   - [General workflow of the worker](#general-workflow-of-the-worker)
   - [Getting started with local development](#getting-started-with-local-development)
     - [Publish first message](#publish-first-message)
-    - [Bash script example](#bash-script-example)
+    - [Worker playbooks](#worker-playbooks)
+      - [Custom playbook](#custom-playbook)
+      - [Convert2RHEL Playbook](#convert2rhel-playbook)
   - [FAQ](#faq)
     - [Are there special environment variables used by `rhc-worker-bash`?](#are-there-special-environment-variables-used-by-rhc-worker-bash)
     - [Can I change behavior of `rhc-worker-bash`?](#can-i-change-behavior-of-rhc-worker-bash)
@@ -23,10 +25,11 @@ managed by Red Hat Insights.
 Everything starts when message is sent to rhcd. Worker then:
 
 1. Picks up the message from rhcd
-2. Downloads the bash script as temporary file (see [Bash script example](#bash-script-example))
-3. Executes the script
-4. Reads stdout of the script
-5. Sends the stdout wrapped in JSON back to rhcd
+2. Downloads the worker playbook as temporary file (see [Worker playbooks](#worker-playbooks))
+3. Verify the integrity of the playbook with `insights-client`
+4. Executes the script
+5. Reads stdout of the script
+6. Sends the stdout wrapped in JSON back to rhcd
 
 Then rhcd sends the message to upload service (with data from worker) in order to show the results in Insights UI - our setup for local development simulates the upload with minio storage.
 
@@ -37,12 +40,18 @@ Almost everything that is needed for local development is placed in `development
 Overview of what is needed:
 
 - Script to be executed and data host serving our script
-  - Example is present inside the folder `development/nginx`
-  - **Set it up yourself**  - see [Bash script example](#bash-script-example) below
+  - Example is present inside the folder `development/nginx/data`
+  - **Set it up yourself**  - see [Worker playbooks](#worker-playbooks) below
 - System connected via rhc with running rhcd == the system on which the script will be executed
   - **Set it up yourself** - for vagrant box see commands below
 
 ```bash
+# Get a new centos-7 box
+vagrant init eurolinux-vagrant/centos-7
+
+# Install insights-client and rhc
+...
+
 # Connect via rhc
 vagrant ssh -- -t 'rhc connect --server=$(RHSM_SERVER_URL) --username=$(RHSM_USERNAME) --password=$(RHSM_PASSWORD)'
 # Run rhcd
@@ -72,25 +81,34 @@ vagrant ssh -- -t 'rhcd --log-level trace \
 4. You should see logs in rhcd and file with stdout of your script uploaded to the minio storage
     - Go to <http://localhost:9990/login> and use credentials from `.env` file
 
-### Bash script example
+### Worker playbooks
+
+There is an [example playbook](
+https://github.com/oamg/rhc-worker-bash/blob/main/development/nginx/data/example.yaml)
+available under `development/nginx/data`, with a minimal bash script to use
+during the worker execution.
+
+If there's a need to test any other playbook provided in this repository, one
+must change what playbook will be used during the message consumption in the
+[mqtt_publish.py](https://github.com/oamg/rhc-worker-bash/blob/main/development/python/mqtt_publish.py#L22)
+file with the name that corresponds the ones present in `development/nginx/data`. Currently, the ones available are:
+
+1. [example.yaml](https://github.com/oamg/rhc-worker-bash/blob/main/development/nginx/data/example.yaml)
+2. [convert2rhel.yaml](https://github.com/oamg/rhc-worker-bash/blob/main/development/nginx/data/convert2rhel.yaml)
+
+#### Custom playbook
 
 Create or update a yaml file inside the folder `development/nginx/data/*`.
 Correct structure with exampe bash script can be seen below:
 
-```yml
-vars:
-  _insights_signature: |
-    ascii_armored gpg signature
-  _insights_signature_exclude: "/vars/insights_signature,/vars/content_vars"
-  content: |
-    #!/bin/sh
-    /usr/bin/convert2rhel --help
-  content_vars:
-    # variables that will be handed to the script as environment vars
-    # will be prefixed with RHC_WORKER_*
-    FOO: bar
-    BAR: foo
-```
+#### Convert2RHEL Playbook
+
+A specialized [Convert2RHEL](https://github.com/oamg/convert2rhel) playbook can be found under the `development/nginx/data` as well. The playbook will take of the following functions:
+
+1. Setup Convert2RHEL (Download certificates, repositories and etc...)
+2. Set a couple of environment variables for the Convert2RHEl execution (Based on the `content_vars` defined in the playbook)
+3. Run convert2rhel with default commands
+4. A function to run any post-execution commands needed by the conversion (Currently empty.)
 
 ## FAQ
 
