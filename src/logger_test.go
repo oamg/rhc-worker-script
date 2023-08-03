@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"testing"
 
@@ -79,5 +81,32 @@ func TestSetupLogger(t *testing.T) {
 				}
 			}()
 		})
+	}
+}
+
+func TestSetupSosExtrasReport(t *testing.T) {
+	// Create a temporary directory for the log folder
+	logFolder := t.TempDir()
+	logFileName := "log-file"
+	fileContent := path.Join(logFolder, logFileName, "test-file")
+	expectedFileContent := fmt.Sprintf(":%s", fileContent)
+	// defer os.RemoveAll(logFolder)
+
+	setupSosExtrasReport(logFolder, logFileName, fileContent)
+	if _, err := os.Stat(logFolder); os.IsNotExist(err) {
+		t.Errorf("Log folder not created: %v", err)
+	}
+
+	logFilePath := filepath.Join(logFolder, logFileName)
+	if _, err := os.Stat(logFilePath); os.IsNotExist(err) {
+		t.Errorf("SOS report file not created: %v", err)
+	}
+
+	logFile, err := os.ReadFile(logFilePath)
+	if err != nil {
+		t.Errorf("Failed to read file: %v", err)
+	}
+	if string(logFile) != expectedFileContent {
+		t.Errorf("File content does not match")
 	}
 }

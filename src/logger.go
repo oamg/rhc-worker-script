@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path"
@@ -22,8 +23,9 @@ func setupLogger(logFolder string, fileName string) *os.File {
 		}
 	}
 
+	logFilePath := path.Join(logFolder, fileName)
 	// open log file
-	logFile, err := os.Create(path.Join(logFolder, fileName))
+	logFile, err := os.Create(logFilePath)
 	if err != nil {
 		log.Error(err)
 	}
@@ -51,4 +53,28 @@ func setupLogger(logFolder string, fileName string) *os.File {
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
 
 	return logFile
+}
+
+// setupSosExtrasReport sets up the sos report file for the sos_extra plugin to
+// collect the logs for the worker, which is a special file that points out to
+// the current path of the logfile for the worker.
+func setupSosExtrasReport(logFolder string, logFileName string, fileContent string) {
+	// Check if path exists, if not, create it.
+	if _, err := os.Stat(logFolder); err != nil {
+		if err := os.Mkdir(logFolder, os.ModePerm); err != nil {
+			log.Error(err)
+		}
+	}
+
+	// open sosreport file
+	logFile, err := os.Create(path.Join(logFolder, logFileName))
+	if err != nil {
+		log.Error(err)
+	}
+	defer logFile.Close()
+
+	content := fmt.Sprintf(":%s", fileContent)
+	if _, err := logFile.WriteString(content); err != nil {
+		log.Error(err)
+	}
 }
