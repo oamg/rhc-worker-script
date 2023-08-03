@@ -81,4 +81,4 @@ publish:
 
 development:
 	@podman-compose -f development/podman-compose.yml down
-	podman-compose -f development/podman-compose.yml up
+	podman-compose -f development/podman-compose.yml up -d

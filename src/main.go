@@ -73,7 +73,6 @@ func main() {
 	}
 
 	log.Infoln("Listening to messages...", yggdDispatchSocketAddr)
-
 	// Register as a Worker service with gRPC and start accepting connections.
 	s := grpc.NewServer()
 	pb.RegisterWorkerServer(s, &jobServer{})
