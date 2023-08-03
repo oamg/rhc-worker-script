@@ -28,7 +28,6 @@ func verifyYamlFile(yamlData []byte) bool {
 		return true
 	}
 
-	log.Infoln("Verifying yaml file...")
 	// --payload here will be a no-op because no upload is performed when using the verifier
 	//   but, it will allow us to update the egg!
 
@@ -67,15 +66,29 @@ func verifyYamlFile(yamlData []byte) bool {
 	return true
 }
 
+func setEnvVariablesForCommand(cmd *exec.Cmd, variables map[string]string) {
+	cmd.Env = os.Environ()
+	getEnvVarName := func(key string) string {
+		return fmt.Sprintf("RHC_WORKER_%s", strings.ToUpper(key))
+	}
+	for key, value := range variables {
+		prefixedKey := getEnvVarName(key)
+		envVarSetString := fmt.Sprintf("%s=%s", prefixedKey, value)
+		cmd.Env = append(cmd.Env, envVarSetString)
+		log.Infoln("Successfully set env variable ", prefixedKey)
+	}
+}
+
 // Parses given yaml data.
 // If signature is valid then extracts the bash script to temporary file,
 // sets env variables if present and then runs the script.
 // Return stdout of executed script or error message if the signature wasn't valid.
 func processSignedScript(incomingContent []byte) string {
+	// Verify signature
+	log.Infoln("Verifying signature ...")
 	signatureIsValid := verifyYamlFile(incomingContent)
 	if !signatureIsValid {
 		errorMsg := "Signature of yaml file is invalid"
-		log.Errorln(errorMsg)
 		return errorMsg
 	}
 	log.Infoln("Signature of yaml file is valid")
@@ -88,44 +101,20 @@ func processSignedScript(incomingContent []byte) string {
 		return "Yaml couldn't be unmarshaled"
 	}
 
-	// Set env variables
-	getEnvVarName := func(key string) string {
-		return fmt.Sprintf("RHC_WORKER_%s", strings.ToUpper(key))
-	}
-	for key, value := range yamlContent.Vars.ContentVars {
-		prefixedKey := getEnvVarName(key)
-		err := os.Setenv(prefixedKey, value)
-		if err != nil {
-			log.Errorln(err)
-		} else {
-			log.Infoln("Successfully set env variable", prefixedKey, "=", value)
-		}
-	}
-	defer func() {
-		for key := range yamlContent.Vars.ContentVars {
-			os.Unsetenv(getEnvVarName(key))
-		}
-	}()
-
-	// NOTE: just debug to see the values
-	log.Debugln("Insights Signature:", yamlContent.Vars.InsightsSignature)
-	log.Debugln("Insights Signature Exclude:", yamlContent.Vars.InsightsSignatureExclude)
-	log.Debugln("Script:", yamlContent.Vars.Content)
-	log.Debugln("Vars:")
-	for key, value := range yamlContent.Vars.ContentVars {
-		log.Debugln(" ", key, ":", value)
-	}
-
 	// Write the file contents to the temporary disk
 	log.Infoln("Writing temporary bash script")
 	scriptFileName := writeFileToTemporaryDir(
 		[]byte(yamlContent.Vars.Content), *config.TemporaryWorkerDirectory)
 	defer os.Remove(scriptFileName)
 
-	// Execute the script
-	log.Infoln("Executing bash script")
-	out, err := exec.Command("/bin/sh", scriptFileName).Output()
+	log.Infoln("Processing bash script ...")
 
+	// Execute script
+	log.Infoln("Executing bash script...")
+	cmd := exec.Command("/bin/sh", scriptFileName)
+	setEnvVariablesForCommand(cmd, yamlContent.Vars.ContentVars)
+
+	out, err := cmd.Output()
 	if err != nil {
 		log.Errorln("Failed to execute script: ", err)
 		return ""
