@@ -4,7 +4,6 @@ import (
 	"context"
 	"net"
 	"os"
-	"path"
 	"time"
 
 	"git.sr.ht/~spc/go-log"
@@ -18,8 +17,6 @@ import (
 const configFilePath = "/etc/rhc/workers/rhc-worker-bash.yml"
 const logDir = "/var/log/rhc-worker-bash"
 const logFileName = "rhc-worker-bash.log"
-const sosReportFolder = "/etc/sos.extras.d"
-const sosReportFile = "rhc-worker-logs"
 
 var yggdDispatchSocketAddr string
 var config *Config
@@ -41,7 +38,6 @@ func main() {
 
 	logFile := setupLogger(logDir, logFileName)
 	defer logFile.Close()
-	setupSosExtrasReport(sosReportFolder, sosReportFile, path.Join(logDir, logFileName))
 
 	// Dial the dispatcher on its well-known address.
 	conn, err := grpc.Dial(

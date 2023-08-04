@@ -9,6 +9,9 @@ import (
 	"git.sr.ht/~spc/go-log"
 )
 
+var sosReportFolder = "/etc/sos.extras.d"
+var sosReportFile = "rhc-worker-logs"
+
 // SetupLogger sets up the logger for the application and returns the log file.
 // It creates a log folder if it doesn't exist, opens a log file, sets the log level
 // based on the "YGG_LOG_LEVEL" environment variable, configures the log output to
@@ -16,11 +19,8 @@ import (
 // such as date-time, filename, and line number.
 // Returns a pointer to an os.File representing the opened log file.
 func setupLogger(logFolder string, fileName string) *os.File {
-	// Check if path exists, if not, create it.
-	if _, err := os.Stat(logFolder); err != nil {
-		if err := os.Mkdir(logFolder, os.ModePerm); err != nil {
-			log.Error(err)
-		}
+	if err := checkAndCreateDirectory(logFolder); err != nil {
+		log.Error(err)
 	}
 
 	logFilePath := path.Join(logFolder, fileName)
@@ -45,6 +45,9 @@ func setupLogger(logFolder string, fileName string) *os.File {
 		log.SetLevel(log.LevelInfo)
 	}
 
+	// Initialization for the sosreport extras plugin
+	setupSosExtrasReport(logFilePath)
+
 	// set log output
 	multWriter := io.MultiWriter(os.Stdout, logFile)
 	log.SetOutput(multWriter)
@@ -58,16 +61,13 @@ func setupLogger(logFolder string, fileName string) *os.File {
 // setupSosExtrasReport sets up the sos report file for the sos_extra plugin to
 // collect the logs for the worker, which is a special file that points out to
 // the current path of the logfile for the worker.
-func setupSosExtrasReport(logFolder string, logFileName string, fileContent string) {
-	// Check if path exists, if not, create it.
-	if _, err := os.Stat(logFolder); err != nil {
-		if err := os.Mkdir(logFolder, os.ModePerm); err != nil {
-			log.Error(err)
-		}
+func setupSosExtrasReport(fileContent string) {
+	if err := checkAndCreateDirectory(sosReportFolder); err != nil {
+		log.Error(err)
 	}
 
 	// open sosreport file
-	logFile, err := os.Create(path.Join(logFolder, logFileName))
+	logFile, err := os.Create(path.Join(sosReportFolder, sosReportFile))
 	if err != nil {
 		log.Error(err)
 	}

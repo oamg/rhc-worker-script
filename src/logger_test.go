@@ -85,19 +85,19 @@ func TestSetupLogger(t *testing.T) {
 }
 
 func TestSetupSosExtrasReport(t *testing.T) {
-	// Create a temporary directory for the log folder
-	logFolder := t.TempDir()
-	logFileName := "log-file"
-	fileContent := path.Join(logFolder, logFileName, "test-file")
+	// FIXME: We are overriding the globals for the below variables, not the
+	// best approach, but works for now.
+	sosReportFile = "log-file"
+	sosReportFolder = t.TempDir()
+	fileContent := path.Join(sosReportFolder, sosReportFile, "test-file")
 	expectedFileContent := fmt.Sprintf(":%s", fileContent)
-	// defer os.RemoveAll(logFolder)
 
-	setupSosExtrasReport(logFolder, logFileName, fileContent)
-	if _, err := os.Stat(logFolder); os.IsNotExist(err) {
+	setupSosExtrasReport(fileContent)
+	if _, err := os.Stat(sosReportFolder); os.IsNotExist(err) {
 		t.Errorf("Log folder not created: %v", err)
 	}
 
-	logFilePath := filepath.Join(logFolder, logFileName)
+	logFilePath := filepath.Join(sosReportFolder, sosReportFile)
 	if _, err := os.Stat(logFilePath); os.IsNotExist(err) {
 		t.Errorf("SOS report file not created: %v", err)
 	}
