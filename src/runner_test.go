@@ -20,33 +20,15 @@ func TestProcessSignedScript(t *testing.T) {
 			expectedResult: "",
 		},
 		{
-			name:       "verification disabled, yaml data supplied = non-empty output",
-			verifyYAML: false,
-			yamlData: []byte(`
-vars:
-    insights_signature: "invalid-signature"
-    insights_signature_exclude: "/vars/insights_signature,/vars/content_vars"
-    content: |
-        #!/bin/sh
-        echo "$RHC_WORKER_FOO $RHC_WORKER_BAR!"
-    content_vars:
-        FOO: Hello
-        BAR: World`),
+			name:           "verification disabled, yaml data supplied = non-empty output",
+			verifyYAML:     false,
+			yamlData:       ExampleYamlData,
 			expectedResult: "Hello World!\n",
 		},
 		{
-			name:       "verification enabled, invalid signature = error msg returned",
-			verifyYAML: true,
-			yamlData: []byte(`
-vars:
-    insights_signature: "invalid-signature"
-    insights_signature_exclude: "/vars/insights_signature,/vars/content_vars"
-    content: |
-        #!/bin/sh
-        echo "$RHC_WORKER_FOO $RHC_WORKER_BAR!"
-    content_vars:
-        FOO: Hello
-        BAR: World`),
+			name:           "verification enabled, invalid signature = error msg returned",
+			verifyYAML:     true,
+			yamlData:       ExampleYamlData,
 			expectedResult: "Signature of yaml file is invalid",
 		},
 	}
@@ -85,14 +67,14 @@ func TestVerifyYamlFile(t *testing.T) {
 		{
 			name:                         "verification disabled",
 			verifyYAML:                   false,
-			yamlData:                     []byte{},
+			yamlData:                     ExampleYamlData,
 			shouldDoInsightsCoreGPGCheck: false,
 			expectedResult:               true,
 		},
 		{
 			name:                         "verification enabled and verification succeeds",
 			verifyYAML:                   true,
-			yamlData:                     []byte("valid-yaml"),
+			yamlData:                     ExampleYamlData,
 			verificationCommand:          "true",
 			verificationArgs:             []string{},
 			shouldDoInsightsCoreGPGCheck: false,
@@ -101,7 +83,7 @@ func TestVerifyYamlFile(t *testing.T) {
 		{
 			name:                         "verification is enabled and verification fails",
 			verifyYAML:                   true,
-			yamlData:                     []byte("invalid-yaml"),
+			yamlData:                     ExampleYamlData,
 			verificationCommand:          "false",
 			verificationArgs:             []string{},
 			shouldDoInsightsCoreGPGCheck: false,

@@ -10,14 +10,19 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Received Yaml data has to match the expected signedYamlFile structure
-type signedYamlFile struct {
-	Vars struct {
-		InsightsSignature        string            `yaml:"_insights_signature"`
-		InsightsSignatureExclude string            `yaml:"_insights_signature_exclude"`
-		Content                  string            `yaml:"content"`
-		ContentVars              map[string]string `yaml:"content_vars"`
-	} `yaml:"vars"`
+// Nested variables expected to be contained in signedYamlContent
+type signedYamlContentVars struct {
+	InsightsSignature        string            `yaml:"insights_signature"`
+	InsightsSignatureExclude string            `yaml:"insights_signature_exclude"`
+	Content                  string            `yaml:"content"`
+	ContentVars              map[string]string `yaml:"content_vars"`
+}
+
+// Represents one item in received yaml file
+// It is expected that the received yaml file contains list on top level
+type signedYamlContent struct {
+	Name string                `yaml:"name"`
+	Vars signedYamlContentVars `yaml:"vars"`
 }
 
 var verificationCommand = "insights-client"
@@ -87,6 +92,12 @@ func setEnvVariablesForCommand(cmd *exec.Cmd, variables map[string]string) {
 // sets env variables if present and then runs the script.
 // Return stdout of executed script or error message if the signature wasn't valid.
 func processSignedScript(incomingContent []byte) string {
+	if len(incomingContent) == 0 {
+		err := "Incoming Yaml content is empty"
+		log.Errorln(err)
+		return ""
+	}
+
 	// Verify signature
 	log.Infoln("Verifying signature ...")
 	signatureIsValid := verifyYamlFile(incomingContent)
@@ -96,13 +107,16 @@ func processSignedScript(incomingContent []byte) string {
 	}
 	log.Infoln("Signature of yaml file is valid")
 
-	// Parse the YAML data into the yamlConfig struct
-	var yamlContent signedYamlFile
-	err := yaml.Unmarshal(incomingContent, &yamlContent)
+	// Parse the YAML data into array consisting of items of expected structure
+	var signedYamlArray []signedYamlContent
+	err := yaml.Unmarshal(incomingContent, &signedYamlArray)
 	if err != nil {
 		log.Errorln(err)
 		return "Yaml couldn't be unmarshaled"
 	}
+
+	// We know/expect that the incoming data are array with ONLY one item
+	yamlContent := signedYamlArray[0]
 
 	// Write the file contents to the temporary disk
 	log.Infoln("Writing temporary bash script")

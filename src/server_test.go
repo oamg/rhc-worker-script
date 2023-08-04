@@ -88,17 +88,6 @@ func TestCreateDataMessage(t *testing.T) {
 }
 
 func TestProcessData(t *testing.T) {
-	testYAMLData := []byte(`
-vars:
-    insights_signature: "invalid-signature"
-    insights_signature_exclude: "/vars/insights_signature,/vars/content_vars"
-    content: |
-        #!/bin/sh
-        echo "$RHC_WORKER_FOO $RHC_WORKER_BAR!"
-    content_vars:
-        FOO: Hello
-        BAR: World`)
-
 	testCases := []struct {
 		name                  string
 		yamlData              []byte
@@ -108,7 +97,7 @@ vars:
 	}{
 		{
 			name:                  "Expected data are present in result data",
-			yamlData:              testYAMLData,
+			yamlData:              ExampleYamlData,
 			expectedOutput:        "Hello World!",
 			expectedDirective:     "bar",
 			expectedReturnContent: "foo",

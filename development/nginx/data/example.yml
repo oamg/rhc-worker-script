@@ -1,13 +1,14 @@
-vars:
-  # Signature to validate that no one tampered with script
-  _insights_signature: |
-    ascii_armored gpg signature
-  _insights_signature_exclude: "/vars/insights_signature,/vars/content_vars"
-  content: |
-    #!/bin/sh
-    echo "Hello, world!"
-  content_vars:
-    # variables that will be handed to the script as environment vars
-    # will be prefixed with RHC_WORKER_*
-    FOO: bar
-    BAR: foo
+- name: Hello World Example
+  vars:
+    # Signature to validate that no one tampered with script
+    insights_signature: |
+      ascii_armored gpg signature
+    insights_signature_exclude: "/vars/insights_signature,/vars/content_vars"
+    content: |
+      #!/bin/sh
+      echo "Hello, world!"
+    content_vars:
+      # variables that will be handed to the script as environment vars
+      # will be prefixed with RHC_WORKER_*
+      FOO: bar
+      BAR: foo
