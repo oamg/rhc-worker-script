@@ -61,19 +61,21 @@ func setupLogger(logFolder string, fileName string) *os.File {
 // setupSosExtrasReport sets up the sos report file for the sos_extra plugin to
 // collect the logs for the worker, which is a special file that points out to
 // the current path of the logfile for the worker.
-func setupSosExtrasReport(fileContent string) {
+func setupSosExtrasReport(logFilePath string) {
 	if err := checkAndCreateDirectory(sosReportFolder); err != nil {
 		log.Error(err)
 	}
 
-	// open sosreport file
 	logFile, err := os.Create(path.Join(sosReportFolder, sosReportFile))
 	if err != nil {
 		log.Error(err)
 	}
 	defer logFile.Close()
 
-	content := fmt.Sprintf(":%s", fileContent)
+	// sosreport expects that the file content will be in the following format:
+	// ":/path/to/your/log/file.{log,txt,...}", this will trigger sosreport to
+	// collect the file without the need to have a special plugin in sosreport.
+	content := fmt.Sprintf(":%s", logFilePath)
 	if _, err := logFile.WriteString(content); err != nil {
 		log.Error(err)
 	}
