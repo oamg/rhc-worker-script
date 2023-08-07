@@ -21,9 +21,10 @@ const logFileName = "rhc-worker-bash.log"
 var yggdDispatchSocketAddr string
 var config *Config
 
-// main is the entry point of the application. It initializes values from the environment,
-// sets up the logger, establishes a connection with the dispatcher, registers as a handler,
-// listens for incoming messages, and starts accepting connections as a Worker service.
+// main is the entry point of the application. It initializes values from the
+// environment, sets up the logger, establishes a connection with the
+// dispatcher, registers as a handler, listens for incoming messages, and
+// starts accepting connections as a Worker service.
 // Note: The function blocks and runs indefinitely until the server is stopped.
 func main() {
 	var yggSocketAddrExists bool // Has to be separately declared otherwise grpc.Dial doesn't work

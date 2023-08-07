@@ -156,3 +156,17 @@ func loadConfigOrDefault(filePath string) *Config {
 	setDefaultValues(config)
 	return config
 }
+
+// Helper function to check if a directory exists, if not, create the
+// directory, otherwise, return nil. If it fails to create the directory, the
+// function will return the error raised by `os.Mkdir` to the caller.
+func checkAndCreateDirectory(folder string) error {
+	// Check if path exists, if not, create it.
+	if _, err := os.Stat(folder); err != nil {
+		if err := os.Mkdir(folder, os.ModePerm); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

@@ -1,12 +1,16 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path"
 
 	"git.sr.ht/~spc/go-log"
 )
+
+var sosReportFolder = "/etc/sos.extras.d"
+var sosReportFile = "rhc-worker-logs"
 
 // SetupLogger sets up the logger for the application and returns the log file.
 // It creates a log folder if it doesn't exist, opens a log file, sets the log level
@@ -15,15 +19,13 @@ import (
 // such as date-time, filename, and line number.
 // Returns a pointer to an os.File representing the opened log file.
 func setupLogger(logFolder string, fileName string) *os.File {
-	// Check if path exists, if not, create it.
-	if _, err := os.Stat(logFolder); err != nil {
-		if err := os.Mkdir(logFolder, os.ModePerm); err != nil {
-			log.Error(err)
-		}
+	if err := checkAndCreateDirectory(logFolder); err != nil {
+		log.Error(err)
 	}
 
+	logFilePath := path.Join(logFolder, fileName)
 	// open log file
-	logFile, err := os.Create(path.Join(logFolder, fileName))
+	logFile, err := os.Create(logFilePath)
 	if err != nil {
 		log.Error(err)
 	}
@@ -43,6 +45,9 @@ func setupLogger(logFolder string, fileName string) *os.File {
 		log.SetLevel(log.LevelInfo)
 	}
 
+	// Initialization for the sosreport extras plugin
+	setupSosExtrasReport(logFilePath)
+
 	// set log output
 	multWriter := io.MultiWriter(os.Stdout, logFile)
 	log.SetOutput(multWriter)
@@ -51,4 +56,27 @@ func setupLogger(logFolder string, fileName string) *os.File {
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
 
 	return logFile
+}
+
+// setupSosExtrasReport sets up the sos report file for the sos_extra plugin to
+// collect the logs for the worker, which is a special file that points out to
+// the current path of the logfile for the worker.
+func setupSosExtrasReport(logFilePath string) {
+	if err := checkAndCreateDirectory(sosReportFolder); err != nil {
+		log.Error(err)
+	}
+
+	logFile, err := os.Create(path.Join(sosReportFolder, sosReportFile))
+	if err != nil {
+		log.Error(err)
+	}
+	defer logFile.Close()
+
+	// sosreport expects that the file content will be in the following format:
+	// ":/path/to/your/log/file.{log,txt,...}", this will trigger sosreport to
+	// collect the file without the need to have a special plugin in sosreport.
+	content := fmt.Sprintf(":%s", logFilePath)
+	if _, err := logFile.WriteString(content); err != nil {
+		log.Error(err)
+	}
 }

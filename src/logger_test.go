@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"testing"
 
@@ -79,5 +81,32 @@ func TestSetupLogger(t *testing.T) {
 				}
 			}()
 		})
+	}
+}
+
+func TestSetupSosExtrasReport(t *testing.T) {
+	// FIXME: We are overriding the globals for the below variables, not the
+	// best approach, but works for now.
+	sosReportFile = "log-file"
+	sosReportFolder = t.TempDir()
+	fileContent := path.Join(sosReportFolder, sosReportFile, "test-file")
+	expectedFileContent := fmt.Sprintf(":%s", fileContent)
+
+	setupSosExtrasReport(fileContent)
+	if _, err := os.Stat(sosReportFolder); os.IsNotExist(err) {
+		t.Errorf("Log folder not created: %v", err)
+	}
+
+	logFilePath := filepath.Join(sosReportFolder, sosReportFile)
+	if _, err := os.Stat(logFilePath); os.IsNotExist(err) {
+		t.Errorf("SOS report file not created: %v", err)
+	}
+
+	logFile, err := os.ReadFile(logFilePath)
+	if err != nil {
+		t.Errorf("Failed to read file: %v", err)
+	}
+	if string(logFile) != expectedFileContent {
+		t.Errorf("File content does not match")
 	}
 }
