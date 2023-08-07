@@ -1,46 +1,47 @@
-vars:
-  # Signature to validate that no one tampered with script
-  insights_signature: |
-    ascii_armored gpg signature
-  insights_signature_exclude: "/vars/insights_signature,/vars/content_vars"
-  content: |
-    #!/bin/bash
-    set -euo pipefail
+- name: Convert2rhel
+  vars:
+    # Signature to validate that no one tampered with script
+    insights_signature: |
+      ascii_armored gpg signature
+    insights_signature_exclude: "/vars/insights_signature,/vars/content_vars"
+    content: |
+      #!/bin/bash
+      set -euo pipefail
 
-    setup_convert2rhel() {
-      curl -o /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release https://www.redhat.com/security/data/fd431d51.txt
-      curl --create-dirs -o /etc/rhsm/ca/redhat-uep.pem https://ftp.redhat.com/redhat/convert2rhel/redhat-uep.pem
-      curl -o /etc/yum.repos.d/convert2rhel.repo https://ftp.redhat.com/redhat/convert2rhel/7/convert2rhel.repo
+      setup_convert2rhel() {
+        curl -o /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release https://www.redhat.com/security/data/fd431d51.txt
+        curl --create-dirs -o /etc/rhsm/ca/redhat-uep.pem https://ftp.redhat.com/redhat/convert2rhel/redhat-uep.pem
+        curl -o /etc/yum.repos.d/convert2rhel.repo https://ftp.redhat.com/redhat/convert2rhel/7/convert2rhel.repo
 
-      yum install convert2rhel -y && yum update convert2rhel -y
-    }
+        yum install convert2rhel -y && yum update convert2rhel -y
+      }
 
-    run_convert2rhel() {
-      set CONVERT2RHEL_EXPERIMENTAL_ANALYSIS="${RHC_WORKER_CONVERT2RHEL_EXPERIMENTAL_ANALYSIS}"
-      set CONVERT2RHEL_DISABLE_TELEMETRY="${RHC_WORKER_CONVERT2RHEL_DISABLE_TELEMETRY}"
+      run_convert2rhel() {
+        set CONVERT2RHEL_EXPERIMENTAL_ANALYSIS="${RHC_WORKER_CONVERT2RHEL_EXPERIMENTAL_ANALYSIS}"
+        set CONVERT2RHEL_DISABLE_TELEMETRY="${RHC_WORKER_CONVERT2RHEL_DISABLE_TELEMETRY}"
 
-      /usr/bin/convert2rhel --debug -y
-    }
+        /usr/bin/convert2rhel --debug -y
+      }
 
-    finish() {
-      echo "Done!"
-    }
+      finish() {
+        echo "Done!"
+      }
 
-    main() {
-      setup_convert2rhel
-      run_convert2rhel
-    }
+      main() {
+        setup_convert2rhel
+        run_convert2rhel
+      }
 
-    # Trap the exit and error exit codes and execute the `cleanup` function.
-    # Intended to be executed regardless of what happens at the end of the script
-    # execution, rather than placing it as a normal function call, this will be
-    # executed regardless if it errors out or finish successfully.
-    # More at: http://redsymbol.net/articles/bash-exit-traps/
-    trap finish EXIT ERR
+      # Trap the exit and error exit codes and execute the `cleanup` function.
+      # Intended to be executed regardless of what happens at the end of the script
+      # execution, rather than placing it as a normal function call, this will be
+      # executed regardless if it errors out or finish successfully.
+      # More at: http://redsymbol.net/articles/bash-exit-traps/
+      trap finish EXIT ERR
 
-    main
-  content_vars:
-    # variables that will be handed to the script as environment vars
-    # will be prefixed with RHC_WORKER_*
-    CONVERT2RHEL_EXPERIMENTAL_ANALYSIS: 1
-    CONVERT2RHEL_DISABLE_TELEMETRY: 1
+      main
+    content_vars:
+      # variables that will be handed to the script as environment vars
+      # will be prefixed with RHC_WORKER_*
+      CONVERT2RHEL_EXPERIMENTAL_ANALYSIS: 1
+      CONVERT2RHEL_DISABLE_TELEMETRY: 1
