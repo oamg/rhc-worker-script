@@ -1,10 +1,10 @@
 ![Tests](https://github.com/oamg/rhc-worker/actions/workflows/tests.yml/badge.svg)
 [![codecov](https://codecov.io/github/oamg/rhc-worker/branch/main/graph/badge.svg?token=6MRLOJS2SJ)](https://codecov.io/github/oamg/rhc-worker)
 
-# RHC Worker Bash
+# RHC Worker
 
-Remote Host Configuration (rhc) worker for executing bash scripts on hosts
-managed by Red Hat Insights.
+Remote Host Configuration (rhc) worker for executing  scripts on hosts
+managed by Red Hat Insights. Interpreter used to execute the script is defined inside the supplied yaml file - served by insights.
 
 - [RHC Worker Bash](#rhc-worker)
   - [General workflow of the worker](#general-workflow-of-the-worker)
