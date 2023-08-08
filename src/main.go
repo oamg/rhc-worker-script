@@ -14,9 +14,9 @@ import (
 )
 
 // Initialized in main
-const configFilePath = "/etc/rhc/workers/rhc-worker.yml"
-const logDir = "/var/log/rhc-worker"
-const logFileName = "rhc-worker.log"
+const configFilePath = "/etc/rhc/workers/rhc-worker-script.yml"
+const logDir = "/var/log/rhc-worker-script"
+const logFileName = "rhc-worker-script.log"
 
 var yggdDispatchSocketAddr string
 var config *Config
@@ -52,11 +52,11 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	// Register as a handler of the "rhc-worker" type.
+	// Register as a handler of the "rhc-worker-script" type.
 	r, err := c.Register(
 		ctx,
 		&pb.RegistrationRequest{
-			Handler:         "rhc-worker",
+			Handler:         "rhc-worker-script",
 			Pid:             int64(os.Getpid()),
 			DetachedContent: true,
 		})

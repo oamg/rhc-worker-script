@@ -4,7 +4,7 @@
 %define debug_package %{nil}
 
 %global repo_orgname oamg
-%global repo_name rhc-worker
+%global repo_name rhc-worker-script
 %global rhc_libexecdir %{_libexecdir}/rhc
 %{!?_root_sysconfdir:%global _root_sysconfdir %{_sysconfdir}}
 %global rhc_worker_conf_dir %{_root_sysconfdir}/rhc/workers
@@ -58,7 +58,7 @@ popd
 
 
 %install
-# Create a temporary directory /var/lib/rhc-worker - used mainly for storing temporary files
+# Create a temporary directory /var/lib/rhc-worker-script - used mainly for storing temporary files
 install -d %{buildroot}%{_sharedstatedir}/%{repo_name}/
 
 install -D -m 755 _gopath/src/%{repo_name}-%{version}/%{repo_name}-%{version} %{buildroot}%{rhc_libexecdir}/%{repo_name}

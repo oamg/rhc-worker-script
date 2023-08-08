@@ -25,7 +25,7 @@ MESSAGE = {
   "message_id": str(uuid.uuid4()),
   "version": 1,
   "sent": "2021-01-12T14:58:13+00:00", # str(datetime.datetime.now().isoformat()),
-  "directive": 'rhc-worker',
+  "directive": 'rhc-worker-script',
   "content": f'http://{get_ip_address()}:8000/data/{SERVED_FILENAME}',
   "metadata": {
       "correlation_id": "00000000-0000-0000-0000-000000000000",

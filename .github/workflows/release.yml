@@ -27,7 +27,7 @@ jobs:
         with:
             platforms: 'linux/amd64'
             package: 'src'
-            name: 'rhc-worker-${{ steps.tagName.outputs.tag }}'
+            name: 'rhc-worker-script-${{ steps.tagName.outputs.tag }}'
             compress: 'true'
             dest: 'dist'
 

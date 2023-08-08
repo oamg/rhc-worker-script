@@ -1,7 +1,7 @@
-specfile_path: packaging/rhc-worker.spec
-upstream_package_name: rhc-worker
-downstream_package_name: rhc-worker
-upstream_project_url: https://github.com/oamg/rhc-worker
+specfile_path: packaging/rhc-worker-script.spec
+upstream_package_name: rhc-worker-script
+downstream_package_name: rhc-worker-script
+upstream_project_url: https://github.com/oamg/rhc-worker-script
 
 srpm_build_deps: [golang, make]
 
@@ -10,22 +10,22 @@ jobs:
 - job: copr_build
   enable_net: true
   owner: "@oamg"
-  project: "rhc-worker"
+  project: "rhc-worker-script"
   targets:
     - epel-7-x86_64
   trigger: pull_request
   actions:
     # do not get the version from a tag (git describe) but from the spec file
     get-current-version:
-      - grep -oP '^Version:\s+\K\S+' packaging/rhc-worker.spec
+      - grep -oP '^Version:\s+\K\S+' packaging/rhc-worker-script.spec
     create-archive:
       - "make distribution-tarball"
-      - bash -c "ls -1 ./rhc-worker-*.tar.gz"
+      - bash -c "ls -1 ./rhc-worker-script-*.tar.gz"
 
 - job: copr_build
   enable_net: true
   owner: "@oamg"
-  project: "rhc-worker"
+  project: "rhc-worker-script"
   targets:
     - epel-7-x86_64
   trigger: commit
@@ -34,11 +34,11 @@ jobs:
     # bump spec so we get release starting with 2 and hence all the default branch builds will
     # have higher NVR than all the PR builds
     post-upstream-clone:
-      - rpmdev-bumpspec --comment='latest upstream build' ./packaging/rhc-worker.spec
+      - rpmdev-bumpspec --comment='latest upstream build' ./packaging/rhc-worker-script.spec
 
     # do not get the version from a tag (git describe) but from the spec file
     get-current-version:
-      - grep -oP '^Version:\s+\K\S+' packaging/rhc-worker.spec
+      - grep -oP '^Version:\s+\K\S+' packaging/rhc-worker-script.spec
     create-archive:
       - "make distribution-tarball"
-      - bash -c "ls -1 ./rhc-worker-*.tar.gz"
+      - bash -c "ls -1 ./rhc-worker-script-*.tar.gz"

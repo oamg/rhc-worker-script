@@ -98,7 +98,7 @@ can run a series of pre-defined hooks against our codebase to keep it clean and
 maintainable. Here is an example of output from `pre-commit` being run:
 
 ```
-(.venv3) [rhc-worker]$ pre-commit run --all-files
+(.venv3) [rhc-worker-script]$ pre-commit run --all-files
 golangci-lint............................................................Passed
 fix end of files.........................................................Passed
 trim trailing whitespace.................................................Passed

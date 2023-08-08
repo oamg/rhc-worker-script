@@ -1,5 +1,5 @@
 # recipient directive to register with dispatcher
-directive: "rhc-worker"
+directive: "rhc-worker-script"
 
 # whether to verify incoming yaml files
 verify_yaml: false
@@ -8,4 +8,4 @@ verify_yaml: false
 insights_core_gpg_check: false
 
 # temporary directory in which the temporary script will be placed and executed.
-temporary_worker_directory: "/var/lib/rhc-worker"
+temporary_worker_directory: "/var/lib/rhc-worker-script"
