@@ -1,6 +1,6 @@
-# Contributing to RHC Worker Bash
+# Contributing to RHC Worker Script
 
-The following is a set of guidelines for contributing to RHC Worker Bash codebase,
+The following is a set of guidelines for contributing to RHC Worker Script codebase,
 which are hosted in the [OAMG Organization](https://github.com/oamg) on GitHub.
 These are mostly guidelines, not rules.
 
@@ -144,7 +144,7 @@ pre-commit](https://pre-commit.com/#usage).
 ### Writing tests
 
 Tests are an important part of the development process, they guarantee to us
-that our code is working in the correct way as expected, and for RHC Worker Bash,
+that our code is working in the correct way as expected, and for RHC Worker Script,
 we separate these tests in two categories.
 
 - Unit testing

@@ -89,7 +89,7 @@ func setEnvVariablesForCommand(cmd *exec.Cmd, variables map[string]string) {
 }
 
 // Parses given yaml data.
-// If signature is valid then extracts the bash script to temporary file,
+// If signature is valid then extracts the script to temporary file,
 // sets env variables if present and then runs the script.
 // Return stdout of executed script or error message if the signature wasn't valid.
 func processSignedScript(incomingContent []byte) string {

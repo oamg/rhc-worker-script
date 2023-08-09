@@ -6,7 +6,7 @@
 Remote Host Configuration (rhc) worker for executing  scripts on hosts
 managed by Red Hat Insights. Interpreter used to execute the script is defined inside the supplied yaml file - served by insights.
 
-- [RHC Worker Bash](#rhc-worker-script)
+- [RHC Worker Script](#rhc-worker-script)
   - [General workflow of the worker](#general-workflow-of-the-worker)
   - [Getting started with local development](#getting-started-with-local-development)
     - [Publish first message](#publish-first-message)
@@ -18,7 +18,7 @@ managed by Red Hat Insights. Interpreter used to execute the script is defined i
     - [Can I change behavior of `rhc-worker-script`?](#can-i-change-behavior-of-rhc-worker-script)
     - [Can I change the location of `rhc-worker-script` config?](#can-i-change-the-location-of-rhc-worker-script-config)
   - [Contact](#contact)
-    - [Package maintainers](#package-maintainers)
+    - [Package maintainers](#package-fmaintainers)
 
 ## General workflow of the worker
 
