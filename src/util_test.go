@@ -157,23 +157,23 @@ func boolPtr(b bool) *bool {
 
 // Test YAML data
 const validYAMLData = `
-directive: "rhc-worker-bash"
+directive: "rhc-worker-script"
 verify_yaml: true
 verify_yaml_version_check: true
 insights_core_gpg_check: true
-temporary_worker_directory: "/var/lib/rhc-worker-bash"
+temporary_worker_directory: "/var/lib/rhc-worker-script"
 `
 
 const validYAMLDataMissingValues = `
-directive: "rhc-worker-bash"
+directive: "rhc-worker-script"
 `
 
 func TestLoadConfigOrDefault(t *testing.T) {
 	expectedConfig := &Config{
-		Directive:                strPtr("rhc-worker-bash"),
+		Directive:                strPtr("rhc-worker-script"),
 		VerifyYAML:               boolPtr(true),
 		InsightsCoreGPGCheck:     boolPtr(true),
-		TemporaryWorkerDirectory: strPtr("/var/lib/rhc-worker-bash"),
+		TemporaryWorkerDirectory: strPtr("/var/lib/rhc-worker-script"),
 	}
 
 	testCases := []struct {

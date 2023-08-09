@@ -24,7 +24,7 @@ func writeFileToTemporaryDir(data []byte, temporaryWorkerDirectory string) strin
 		}
 	}
 
-	file, err := os.CreateTemp(temporaryWorkerDirectory, "rhc-worker-bash-")
+	file, err := os.CreateTemp(temporaryWorkerDirectory, "rhc-worker-script")
 	if err != nil {
 		log.Errorln("Failed to create temporary file: ", err)
 	}
@@ -61,7 +61,7 @@ func getOutputFile(stdout string, correlationID string, contentType string) (*by
 	writer := multipart.NewWriter(body)
 
 	h := make(textproto.MIMEHeader)
-	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`, "file", "rhc-worker-bash-output.tar.gz"))
+	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`, "file", "rhc-worker-script-output.tar.gz"))
 	h.Set("Content-Type", contentType)
 
 	part, err := writer.CreatePart(h)
@@ -104,7 +104,7 @@ type Config struct {
 func setDefaultValues(config *Config) {
 	// Set default values for string and boolean fields if they are nil (not present in the YAML)
 	if config.Directive == nil {
-		defaultDirectiveValue := "rhc-worker-bash"
+		defaultDirectiveValue := "rhc-worker-script"
 		config.Directive = &defaultDirectiveValue
 	}
 
@@ -119,7 +119,7 @@ func setDefaultValues(config *Config) {
 	}
 
 	if config.TemporaryWorkerDirectory == nil {
-		defaultTemporaryWorkerDirectoryValue := "/var/lib/rhc-worker-bash"
+		defaultTemporaryWorkerDirectoryValue := "/var/lib/rhc-worker-script"
 		config.TemporaryWorkerDirectory = &defaultTemporaryWorkerDirectoryValue
 	}
 }
@@ -141,7 +141,7 @@ func loadYAMLConfig(filePath string) *Config {
 }
 
 // Load config from given filepath, if config doesn't exist then default config values are used
-// Directive = rhc-worker-bash
+// Directive = rhc-worker-script
 // VerifyYAML = "1"
 // InsightsCoreGPGCheck = "1"
 func loadConfigOrDefault(filePath string) *Config {

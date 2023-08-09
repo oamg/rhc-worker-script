@@ -1,4 +1,4 @@
-module github.com/oamg/rhc-worker-bash
+module github.com/oamg/rhc-worker-script
 
 go 1.16
 

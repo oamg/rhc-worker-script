@@ -4,9 +4,9 @@
     insights_signature: |
       ascii_armored gpg signature
     insights_signature_exclude: "/vars/insights_signature,/vars/content_vars"
+    interpreter: /bin/bash
     content: |
-      #!/bin/sh
-      echo "Hello, world!"
+      echo "Hello, world!" > /root/bash.txt
     content_vars:
       # variables that will be handed to the script as environment vars
       # will be prefixed with RHC_WORKER_*

@@ -10,7 +10,7 @@ import (
 )
 
 var sosReportFolder = "/etc/sos.extras.d"
-var sosReportFile = "rhc-worker-logs"
+var sosReportFile = "rhc-worker-script-logs"
 
 // SetupLogger sets up the logger for the application and returns the log file.
 // It creates a log folder if it doesn't exist, opens a log file, sets the log level

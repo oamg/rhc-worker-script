@@ -1,12 +1,12 @@
-![Tests](https://github.com/oamg/rhc-worker-bash/actions/workflows/tests.yml/badge.svg)
-[![codecov](https://codecov.io/github/oamg/rhc-worker-bash/branch/main/graph/badge.svg?token=6MRLOJS2SJ)](https://codecov.io/github/oamg/rhc-worker-bash)
+![Tests](https://github.com/oamg/rhc-worker-script/actions/workflows/tests.yml/badge.svg)
+[![codecov](https://codecov.io/github/oamg/rhc-worker-script/branch/main/graph/badge.svg?token=6MRLOJS2SJ)](https://codecov.io/github/oamg/rhc-worker-script)
 
-# RHC Worker Bash
+# RHC Worker
 
-Remote Host Configuration (rhc) worker for executing bash scripts on hosts
-managed by Red Hat Insights.
+Remote Host Configuration (rhc) worker for executing  scripts on hosts
+managed by Red Hat Insights. Interpreter used to execute the script is defined inside the supplied yaml file - served by insights.
 
-- [RHC Worker Bash](#rhc-worker-bash)
+- [RHC Worker Script](#rhc-worker-script)
   - [General workflow of the worker](#general-workflow-of-the-worker)
   - [Getting started with local development](#getting-started-with-local-development)
     - [Publish first message](#publish-first-message)
@@ -14,11 +14,11 @@ managed by Red Hat Insights.
       - [Custom playbook](#custom-playbook)
       - [Convert2RHEL Playbook](#convert2rhel-playbook)
   - [FAQ](#faq)
-    - [Are there special environment variables used by `rhc-worker-bash`?](#are-there-special-environment-variables-used-by-rhc-worker-bash)
-    - [Can I change behavior of `rhc-worker-bash`?](#can-i-change-behavior-of-rhc-worker-bash)
-    - [Can I change the location of `rhc-worker-bash` config?](#can-i-change-the-location-of-rhc-worker-bash-config)
+    - [Are there special environment variables used by `rhc-worker-script`?](#are-there-special-environment-variables-used-by-rhc-worker-script)
+    - [Can I change behavior of `rhc-worker-script`?](#can-i-change-behavior-of-rhc-worker-script)
+    - [Can I change the location of `rhc-worker-script` config?](#can-i-change-the-location-of-rhc-worker-script-config)
   - [Contact](#contact)
-    - [Package maintainers](#package-maintainers)
+    - [Package maintainers](#package-fmaintainers)
 
 ## General workflow of the worker
 
@@ -83,18 +83,19 @@ vagrant ssh -- -t 'rhcd --log-level trace \
 
 ### Worker playbooks
 
-There is an [example playbook](
-https://github.com/oamg/rhc-worker-bash/blob/main/development/nginx/data/example.yaml)
+There is an [example bash playbook](
+https://github.com/oamg/rhc-worker-script/blob/main/development/nginx/data/example_bash.yaml)
 available under `development/nginx/data`, with a minimal bash script to use
 during the worker execution.
 
 If there's a need to test any other playbook provided in this repository, one
 must change what playbook will be used during the message consumption in the
-[mqtt_publish.py](https://github.com/oamg/rhc-worker-bash/blob/main/development/python/mqtt_publish.py#L22)
+[mqtt_publish.py](https://github.com/oamg/rhc-worker-script/blob/main/development/python/mqtt_publish.py#L22)
 file with the name that corresponds the ones present in `development/nginx/data`. Currently, the ones available are:
 
-1. [example.yaml](https://github.com/oamg/rhc-worker-bash/blob/main/development/nginx/data/example.yaml)
-2. [convert2rhel.yaml](https://github.com/oamg/rhc-worker-bash/blob/main/development/nginx/data/convert2rhel.yaml)
+1. [example_bash.yaml](https://github.com/oamg/rhc-worker-script/blob/main/development/nginx/data/example_bash.yaml)
+2. [example_python.yaml](https://github.com/oamg/rhc-worker-script/blob/main/development/nginx/data/example_python.yaml)
+3. [convert2rhel.yaml](https://github.com/oamg/rhc-worker-script/blob/main/development/nginx/data/convert2rhel.yaml)
 
 #### Custom playbook
 
@@ -112,23 +113,23 @@ A specialized [Convert2RHEL](https://github.com/oamg/convert2rhel) playbook can 
 
 ## FAQ
 
-### Are there special environment variables used by `rhc-worker-bash`?
+### Are there special environment variables used by `rhc-worker-script`?
 
 There is one special variable that must be set in order to run our worker and that is `YGG_SOCKET_ADDR`, this variable value is set by `rhcd` via `--socket-addr` option.
 
 Other than that there are no special variables, however if downloaded yaml file contained `content_vars` (like the example above), then before the execution of the bash script (`content`) all such variables are set as environment variables and prefixed with `RHC_WORKER_`, after script execution is done they are unset.
 
-### Can I change behavior of `rhc-worker-bash`?
+### Can I change behavior of `rhc-worker-script`?
 
-Yes, some values can be changed if config exists at `/etc/rhc/workers/rhc-worker-bash.yml`, **the config must have valid yaml format**, see all available fields below.
+Yes, some values can be changed if config exists at `/etc/rhc/workers/rhc-worker-script.yml`, **the config must have valid yaml format**, see all available fields below.
 
 Example of full config (with default values):
 
 ```yaml
-# rhc-worker-bash configuration
+# rhc-worker-script configuration
 
 # recipient directive to register with dispatcher
-directive: "rhc-worker-bash"
+directive: "rhc-worker-script"
 
 # whether to verify incoming yaml files
 verify_yaml: true
@@ -137,10 +138,10 @@ verify_yaml: true
 insights_core_gpg_check: true
 
 # temporary directory in which the temporary files with executed bash scripts are created
-temporary_worker_directory: "/var/lib/rhc-worker-bash"
+temporary_worker_directory: "/var/lib/rhc-worker-script"
 ```
 
-### Can I change the location of `rhc-worker-bash` config?
+### Can I change the location of `rhc-worker-script` config?
 
 No, not right now. If you want this feature please create an issue or upvote already existing issue.
 

@@ -1,6 +1,6 @@
-# Contributing to RHC Worker Bash
+# Contributing to RHC Worker Script
 
-The following is a set of guidelines for contributing to RHC Worker Bash codebase,
+The following is a set of guidelines for contributing to RHC Worker Script codebase,
 which are hosted in the [OAMG Organization](https://github.com/oamg) on GitHub.
 These are mostly guidelines, not rules.
 
@@ -98,7 +98,7 @@ can run a series of pre-defined hooks against our codebase to keep it clean and
 maintainable. Here is an example of output from `pre-commit` being run:
 
 ```
-(.venv3) [rhc-worker-bash]$ pre-commit run --all-files
+(.venv3) [rhc-worker-script]$ pre-commit run --all-files
 golangci-lint............................................................Passed
 fix end of files.........................................................Passed
 trim trailing whitespace.................................................Passed
@@ -144,7 +144,7 @@ pre-commit](https://pre-commit.com/#usage).
 ### Writing tests
 
 Tests are an important part of the development process, they guarantee to us
-that our code is working in the correct way as expected, and for RHC Worker Bash,
+that our code is working in the correct way as expected, and for RHC Worker Script,
 we separate these tests in two categories.
 
 - Unit testing

@@ -15,6 +15,7 @@ type signedYamlContentVars struct {
 	InsightsSignature        string            `yaml:"insights_signature"`
 	InsightsSignatureExclude string            `yaml:"insights_signature_exclude"`
 	Content                  string            `yaml:"content"`
+	Interpreter              string            `yaml:"interpreter"`
 	ContentVars              map[string]string `yaml:"content_vars"`
 }
 
@@ -88,7 +89,7 @@ func setEnvVariablesForCommand(cmd *exec.Cmd, variables map[string]string) {
 }
 
 // Parses given yaml data.
-// If signature is valid then extracts the bash script to temporary file,
+// If signature is valid then extracts the script to temporary file,
 // sets env variables if present and then runs the script.
 // Return stdout of executed script or error message if the signature wasn't valid.
 func processSignedScript(incomingContent []byte) string {
@@ -119,16 +120,16 @@ func processSignedScript(incomingContent []byte) string {
 	yamlContent := signedYamlArray[0]
 
 	// Write the file contents to the temporary disk
-	log.Infoln("Writing temporary bash script")
+	log.Infof("Writing temporary script to %s", *config.TemporaryWorkerDirectory)
 	scriptFileName := writeFileToTemporaryDir(
 		[]byte(yamlContent.Vars.Content), *config.TemporaryWorkerDirectory)
 	defer os.Remove(scriptFileName)
 
-	log.Infoln("Processing bash script ...")
+	log.Infoln("Processing script ...")
 
 	// Execute script
-	log.Infoln("Executing bash script...")
-	cmd := exec.Command("/bin/sh", scriptFileName)
+	log.Infoln("Executing script...")
+	cmd := exec.Command(yamlContent.Vars.Interpreter, scriptFileName) //nolint:gosec
 	setEnvVariablesForCommand(cmd, yamlContent.Vars.ContentVars)
 
 	out, err := cmd.Output()
@@ -137,6 +138,6 @@ func processSignedScript(incomingContent []byte) string {
 		return ""
 	}
 
-	log.Infoln("Bash script executed successfully")
+	log.Infoln("Script executed successfully.")
 	return string(out)
 }
