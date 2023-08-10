@@ -19,7 +19,7 @@
 %global use_go_toolset_1_16 0%{?rhel} == 7 && !%{defined centos}
 
 Name:           %{repo_name}
-Version:        0.2
+Version:        0.3
 Release:        1%{?dist}
 Summary:        Worker executing scripts on hosts managed by Red Hat Insights
 
@@ -70,6 +70,17 @@ install -D -d -m 755 %{buildroot}%{rhc_worker_conf_dir}
 %doc README.md
 
 %changelog
+
+* Thu Aug 10 2023 Rodolfo Olivieri <rolivier@redhat.com> 0.3-1
+- Parse minimal yaml instead of raw bash script
+- Tidy up the modules and replace deprecated call WithInsecure
+- Add option to create config for rhc-worker-bash
+- Fix build for go1.16
+- Use separate environment for every executed command
+- Update to make the yaml-file more generic
+- Expected yaml structure should be list on top level
+- Add setup for sos report
+- Update the worker to make it more generic
 
 * Thu Jul 06 2023 Eric Gustavsson <egustavs@redhat.com> 0.2-1
 - Fix RPM specfile Source
