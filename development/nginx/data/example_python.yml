@@ -1,4 +1,4 @@
-- name: Hello World Example
+- name: Hello World Python Example
   vars:
     # Signature to validate that no one tampered with script
     insights_signature: |
@@ -10,7 +10,7 @@
         print("Hello, Python!")
 
         with open("/root/python.txt", "w") as handler:
-          handler.write("Hello, Python!")
+          handler.write("Hello, world!")
 
       main()
     content_vars:
