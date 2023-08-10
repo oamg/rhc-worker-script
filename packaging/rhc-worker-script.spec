@@ -5,6 +5,7 @@
 
 %global repo_orgname oamg
 %global repo_name rhc-worker-script
+%global binary_name rhc-script-worker
 %global rhc_libexecdir %{_libexecdir}/rhc
 %{!?_root_sysconfdir:%global _root_sysconfdir %{_sysconfdir}}
 %global rhc_worker_conf_dir %{_root_sysconfdir}/rhc/workers
@@ -44,28 +45,28 @@ managed by Red Hat Insights.
 
 %build
 mkdir -p _gopath/src
-ln -fs $(pwd)/src _gopath/src/%{repo_name}-%{version}
-ln -fs $(pwd)/vendor _gopath/src/%{repo_name}-%{version}/vendor
+ln -fs $(pwd)/src _gopath/src/%{binary_name}-%{version}
+ln -fs $(pwd)/vendor _gopath/src/%{binary_name}-%{version}/vendor
 export GOPATH=$(pwd)/_gopath
-pushd _gopath/src/%{repo_name}-%{version}
+pushd _gopath/src/%{binary_name}-%{version}
 %if %{use_go_toolset_1_16}
 scl enable go-toolset-1.16 -- %{gobuild}
 %else
 %{gobuild}
 %endif
-strip %{repo_name}-%{version}
+strip %{binary_name}-%{version}
 popd
 
 
 %install
 # Create a temporary directory /var/lib/rhc-worker-script - used mainly for storing temporary files
-install -d %{buildroot}%{_sharedstatedir}/%{repo_name}/
+install -d %{buildroot}%{_sharedstatedir}/%{binary_name}/
 
-install -D -m 755 _gopath/src/%{repo_name}-%{version}/%{repo_name}-%{version} %{buildroot}%{rhc_libexecdir}/%{repo_name}
+install -D -m 755 _gopath/src/%{binary_name}-%{version}/%{binary_name}-%{version} %{buildroot}%{rhc_libexecdir}/%{binary_name}
 install -D -d -m 755 %{buildroot}%{rhc_worker_conf_dir}
 
 %files
-%{rhc_libexecdir}/%{repo_name}
+%{rhc_libexecdir}/%{binary_name}
 %license LICENSE
 %doc README.md
 
