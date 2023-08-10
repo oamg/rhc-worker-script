@@ -45,7 +45,7 @@ clean:
 
 build: $(GO_SOURCES)
 	mkdir -p build
-	CGO_ENABLED=0 go build -o build/rhc-worker-script $^
+	CGO_ENABLED=0 go build -o build/rhc-script-worker $^
 
 distribution-tarball:
 	go mod vendor
