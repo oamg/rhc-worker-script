@@ -20,7 +20,7 @@
 %global use_go_toolset_1_16 0%{?rhel} == 7 && !%{defined centos}
 
 Name:           %{repo_name}
-Version:        0.3
+Version:        0.4
 Release:        1%{?dist}
 Summary:        Worker executing scripts on hosts managed by Red Hat Insights
 
@@ -71,6 +71,10 @@ install -D -d -m 755 %{buildroot}%{rhc_worker_conf_dir}
 %doc README.md
 
 %changelog
+
+* Thu Aug 10 2023 Rodolfo Olivieri <rolivier@redhat.com> 0.4-1
+- Update specfile binary name generation
+- Add couple more unit tests for util.go
 
 * Thu Aug 10 2023 Rodolfo Olivieri <rolivier@redhat.com> 0.3-1
 - Parse minimal yaml instead of raw bash script
