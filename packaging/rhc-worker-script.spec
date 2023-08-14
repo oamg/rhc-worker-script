@@ -74,6 +74,7 @@ install -D -d -m 755 %{buildroot}%{rhc_worker_conf_dir}
 
 * Thu Aug 10 2023 Rodolfo Olivieri <rolivier@redhat.com> 0.4-1
 - Update specfile binary name generation
+- Add couple more unit tests for util.go
 
 * Thu Aug 10 2023 Rodolfo Olivieri <rolivier@redhat.com> 0.3-1
 - Parse minimal yaml instead of raw bash script
