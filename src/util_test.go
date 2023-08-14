@@ -227,3 +227,54 @@ func TestLoadConfigOrDefault(t *testing.T) {
 		})
 	}
 }
+
+func TestSetDefaultValues(t *testing.T) {
+	type args struct {
+		config *Config
+	}
+	tests := []struct {
+		name string
+		args args
+		want args
+	}{
+		{
+			name: "test default values",
+			args: args{config: &Config{nil, nil, nil, nil}},
+			want: args{config: &Config{strPtr("rhc-worker-script"), boolPtr(true), boolPtr(true), strPtr("/var/lib/rhc-worker-script")}},
+		},
+		{
+			name: "test non default values",
+			args: args{config: &Config{strPtr("rhc-worker-script"), boolPtr(true), boolPtr(true), strPtr("/var/lib/rhc-worker-script")}},
+			want: args{config: &Config{strPtr("rhc-worker-script"), boolPtr(true), boolPtr(true), strPtr("/var/lib/rhc-worker-script")}},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			setDefaultValues(tt.args.config)
+
+			if !compareConfigs(tt.args.config, tt.want.config) {
+				t.Errorf("Loaded config does not match expected config")
+			}
+		})
+	}
+}
+
+func TestCheckAndCreateDirectory(t *testing.T) {
+	type args struct {
+		folder string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{name: "non existing path", args: args{folder: "/non-existing/path"}, wantErr: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := checkAndCreateDirectory(tt.args.folder); (err != nil) != tt.wantErr {
+				t.Errorf("checkAndCreateDirectory() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
