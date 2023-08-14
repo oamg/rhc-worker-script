@@ -1,8 +1,8 @@
 cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 cloud.google.com/go v0.34.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 git.sr.ht/~spc/go-log v0.0.0-20210409014304-ce6a6f3602dc/go.mod h1:IKiYUc0lWbZO4uSV0kWNzJSFnABNdrybpPWo46CGgFM=
-git.sr.ht/~spc/go-log v0.0.0-20230531172318-1397be06f5f4 h1:Z49DWDPi2qdWYkpgq+WEv1hQIGB2fVmva361Zs7/Qzg=
-git.sr.ht/~spc/go-log v0.0.0-20230531172318-1397be06f5f4/go.mod h1:IKiYUc0lWbZO4uSV0kWNzJSFnABNdrybpPWo46CGgFM=
+git.sr.ht/~spc/go-log v0.0.0-20210611184941-ce2f05edb627 h1:V8lJMgdkSw4e9vn5ET1WXmhUruSxuk+Ep0VfLcYPl8o=
+git.sr.ht/~spc/go-log v0.0.0-20210611184941-ce2f05edb627/go.mod h1:IKiYUc0lWbZO4uSV0kWNzJSFnABNdrybpPWo46CGgFM=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
