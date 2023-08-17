@@ -26,7 +26,7 @@ Summary:        Worker executing scripts on hosts managed by Red Hat Insights
 
 License:        GPLv3+
 URL:            https://github.com/%{repo_orgname}/%{repo_name}
-Source0:        %{url}/archive/v%{version}/%{name}-%{version}.tar.gz
+Source0:        %{url}/releases/download/v%{version}/%{name}-%{version}.tar.gz
 ExclusiveArch:  %{go_arches}
 
 %if %{use_go_toolset_1_16}
