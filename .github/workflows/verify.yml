@@ -1,4 +1,4 @@
-name: test_coverage
+name: lint_test_coverage
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   tests:
-    name: "Tests + coverage"
+    name: "Lint + Tests + Coverage"
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -20,6 +20,11 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go-version }}
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: latest
 
       - name: Run unit tests
         run: |
