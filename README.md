@@ -1,4 +1,5 @@
-![Tests](https://github.com/oamg/rhc-worker-script/actions/workflows/tests.yml/badge.svg)
+![Tests](https://github.com/oamg/rhc-worker-script/actions/workflows/verify.yml/badge.svg)
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/oamg/rhc-worker-script/main.svg)](https://results.pre-commit.ci/latest/github/oamg/rhc-worker-script/main)
 [![codecov](https://codecov.io/github/oamg/rhc-worker-script/branch/main/graph/badge.svg?token=6MRLOJS2SJ)](https://codecov.io/github/oamg/rhc-worker-script)
 
 # RHC Worker
