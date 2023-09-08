@@ -12,5 +12,5 @@ repos:
   - repo: https://github.com/gitleaks/gitleaks
     rev: v8.18.0
     hooks:
-      - id: gitleaks
+      - id: gitleaks-docker
         stages: [manual, push]
