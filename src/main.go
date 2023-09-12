@@ -35,7 +35,7 @@ func main() {
 
 	config = loadConfigOrDefault(configFilePath)
 	log.Infoln("Configuration loaded: ", config)
-	defer os.RemoveAll(*config.TemporaryWorkerDirectory)
+	defer os.Remove(*config.TemporaryWorkerDirectory)
 
 	logFile := setupLogger(logDir, logFileName)
 	defer logFile.Close()
