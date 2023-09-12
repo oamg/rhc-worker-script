@@ -31,7 +31,9 @@ func writeFileToTemporaryDir(data []byte, temporaryWorkerDirectory string) strin
 	}
 
 	fileName := file.Name()
-	file.Close()
+	if err := file.Close(); err != nil {
+		log.Errorln("File was unexpectedly already closed: ", err)
+	}
 	return fileName
 }
 
@@ -70,7 +72,9 @@ func getOutputFile(stdout string, correlationID string, contentType string) (*by
 		log.Errorln("Failed to write json with script stdout to file: ", err)
 	}
 
-	writer.Close()
+	if err := writer.Close(); err != nil {
+		log.Errorln("Writer was unexpectedly already closed: ", err)
+	}
 
 	log.Infoln("form-data created, returning body: ", body)
 	return body, writer.Boundary()

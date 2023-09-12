@@ -65,7 +65,10 @@ func verifyYamlFile(yamlData []byte) bool {
 		log.Errorln(err)
 		return false
 	}
-	stdin.Close()
+
+	if err := stdin.Close(); err != nil {
+		log.Errorln("stdin was unexpectedly already closed: ", err)
+	}
 
 	output, err := cmd.Output()
 	if err != nil {
