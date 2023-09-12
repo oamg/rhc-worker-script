@@ -17,11 +17,8 @@ import (
 // designated temporary worker directory. It creates the directory if it doesn't exist.
 // The function returns the filename of the created temporary file.
 func writeFileToTemporaryDir(data []byte, temporaryWorkerDirectory string) string {
-	// Check if path exists, if not, create it.
-	if _, err := os.Stat(temporaryWorkerDirectory); err != nil {
-		if err := os.Mkdir(temporaryWorkerDirectory, os.ModePerm); err != nil {
-			log.Errorln("Failed to create temporary directory: ", err)
-		}
+	if err := checkAndCreateDirectory(temporaryWorkerDirectory); err != nil {
+		log.Error("Failed to create temporary directory: ", err)
 	}
 
 	file, err := os.CreateTemp(temporaryWorkerDirectory, "rhc-worker-script")
@@ -163,7 +160,8 @@ func loadConfigOrDefault(filePath string) *Config {
 func checkAndCreateDirectory(folder string) error {
 	// Check if path exists, if not, create it.
 	if _, err := os.Stat(folder); err != nil {
-		if err := os.Mkdir(folder, os.ModePerm); err != nil {
+		// Owner has permission to list, append and search in folder
+		if err := os.Mkdir(folder, 0700); err != nil {
 			return err
 		}
 	}
