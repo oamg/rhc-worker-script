@@ -19,6 +19,8 @@ PIP ?= pip3
 VENV ?= .venv3
 PRE_COMMIT ?= pre-commit
 GO_VERSION ?= 1.16
+CLIENT_ID ?= 00000000-0000-0000-0000-0000000000000
+SERVED_FILENAME ?= example.yml
 
 ifdef KEEP_TEST_CONTAINER
 	CONTAINER_RM =
@@ -78,7 +80,7 @@ coverage-html: test
 	go tool cover -html=coverage.out
 
 publish:
-	. $(VENV)/bin/activate; python development/python/mqtt_publish.py
+	. $(VENV)/bin/activate; python development/python/mqtt_publish.py $(CLIENT_ID) $(SERVED_FILENAME)
 
 development:
 	@podman-compose -f development/podman-compose.yml down
