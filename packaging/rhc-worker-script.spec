@@ -65,10 +65,26 @@ install -d %{buildroot}%{_sharedstatedir}/%{binary_name}/
 install -D -m 755 _gopath/src/%{binary_name}-%{version}/%{binary_name}-%{version} %{buildroot}%{rhc_libexecdir}/%{binary_name}
 install -D -d -m 755 %{buildroot}%{rhc_worker_conf_dir}
 
+cat <<EOF >%{buildroot}%{rhc_worker_conf_dir}/rhc-worker-script.yml
+# recipient directive to register with dispatcher
+directive: "%{name}"
+
+# whether to verify incoming yaml files
+verify_yaml: true
+
+# perform the insights-client GPG check on the insights-core egg
+insights_core_gpg_check: true
+
+# temporary directory in which the temporary script will be placed and executed.
+temporary_worker_directory: "/var/lib/rhc-worker-script"
+EOF
+
+
 %files
 %{rhc_libexecdir}/%{binary_name}
 %license LICENSE
 %doc README.md
+%config %{rhc_worker_conf_dir}/rhc-worker-script.yml
 
 %changelog
 
