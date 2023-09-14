@@ -122,7 +122,7 @@ Other than that there are no special variables, however if downloaded yaml file 
 
 ### Can I change behavior of `rhc-worker-script`?
 
-Yes, some values can be changed if config exists at `/etc/rhc/workers/rhc-worker-script.yml`, **the config must have valid yaml format**, see all available fields below.
+Yes, some values can be changed in the config file located at `/etc/rhc/workers/rhc-worker-script.yml`. After installing the `rhc-worker-script` package, a config file will be created with the default values required for the worker to start processing messages, **the config must have valid yaml format**, see all available fields below.
 
 Example of full config (with default values):
 
