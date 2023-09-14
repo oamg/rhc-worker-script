@@ -3,6 +3,7 @@ import json
 import socket
 import uuid
 import paho.mqtt.client as mqtt
+import sys
 
 def get_ip_address():
   s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -11,14 +12,15 @@ def get_ip_address():
   s.close()
   return host_ip
 
+
 # This is changed everytime you refresh the box and register the machine again.
-CLIENT_ID = "f7fb5fa0-9580-4c18-9658-f95885cb31b5"
+CLIENT_ID = sys.argv[1]
+# NOTE: currently can be whatever you placed inside devleopment/nginx/data folder
+SERVED_FILENAME = sys.argv[2]
+
 BROKER = '127.0.0.1'
 BROKER_PORT = 1883
 TOPIC = f"yggdrasil/{CLIENT_ID}/data/in"
-
-# NOTE: currently can be whatever you placed inside devleopment/nginx/data folder
-SERVED_FILENAME = "example_bash.yml"
 
 MESSAGE = {
   "type": "data",
