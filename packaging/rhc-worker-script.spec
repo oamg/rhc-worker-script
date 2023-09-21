@@ -84,7 +84,7 @@ EOF
 %{rhc_libexecdir}/%{binary_name}
 %license LICENSE
 %doc README.md
-%config %{rhc_worker_conf_dir}/rhc-worker-script.yml
+%{rhc_worker_conf_dir}/rhc-worker-script.yml
 
 %changelog
 
