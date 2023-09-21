@@ -21,7 +21,6 @@ func createDataMessage(commandOutput string, metadata map[string]string, directi
 	var data *pb.Data
 	if commandOutput != "" && fileContent != nil {
 		contentType := fmt.Sprintf("multipart/form-data; boundary=%s", boundary)
-		log.Infof("Sending message to %s", messageID)
 		data = &pb.Data{
 			MessageId:  uuid.New().String(),
 			ResponseTo: messageID,
@@ -95,7 +94,6 @@ type jobServer struct {
 //  6. Sends the data message using the "Send" method of the Dispatcher service.
 func (s *jobServer) Send(_ context.Context, d *pb.Data) (*pb.Receipt, error) {
 
-	// Goroutine processing the data, cancels the context when processing is done
 	go func() {
 		data := processData(d)
 		sendDataToDispatcher(data)

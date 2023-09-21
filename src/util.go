@@ -106,21 +106,25 @@ func setDefaultValues(config *Config) {
 	// Set default values for string and boolean fields if they are nil (not present in the YAML)
 	if config.Directive == nil {
 		defaultDirectiveValue := "rhc-worker-script"
+		log.Infof("config 'directive' value is empty default value (%s) will be used", defaultDirectiveValue)
 		config.Directive = &defaultDirectiveValue
 	}
 
 	if config.VerifyYAML == nil {
 		defaultVerifyYamlValue := true
+		log.Infof("config 'verify_yaml' value is empty default value (%t) will be used", defaultVerifyYamlValue)
 		config.VerifyYAML = &defaultVerifyYamlValue
 	}
 
 	if config.InsightsCoreGPGCheck == nil {
 		defaultGpgCheckValue := true
+		log.Infof("config 'insights_core_gpg_check' value is empty default value (%t) will be used", defaultGpgCheckValue)
 		config.InsightsCoreGPGCheck = &defaultGpgCheckValue
 	}
 
 	if config.TemporaryWorkerDirectory == nil {
 		defaultTemporaryWorkerDirectoryValue := "/var/lib/rhc-worker-script"
+		log.Infof("config 'temporary_worker_directory' value is empty default value (%s) will be used", defaultTemporaryWorkerDirectoryValue)
 		config.TemporaryWorkerDirectory = &defaultTemporaryWorkerDirectoryValue
 	}
 }
