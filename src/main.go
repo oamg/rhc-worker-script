@@ -32,13 +32,13 @@ func main() {
 	if !yggSocketAddrExists {
 		log.Fatal("Missing YGG_SOCKET_ADDR environment variable")
 	}
+	logFile := setupLogger(logDir, logFileName)
+	defer logFile.Close()
 
 	config = loadConfigOrDefault(configFilePath)
 	log.Infoln("Configuration loaded: ", config)
 	defer os.Remove(*config.TemporaryWorkerDirectory)
 
-	logFile := setupLogger(logDir, logFileName)
-	defer logFile.Close()
 
 	// Dial the dispatcher on its well-known address.
 	conn, err := grpc.Dial(
