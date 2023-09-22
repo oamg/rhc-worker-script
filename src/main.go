@@ -39,7 +39,6 @@ func main() {
 	log.Infoln("Configuration loaded: ", config)
 	defer os.Remove(*config.TemporaryWorkerDirectory)
 
-
 	// Dial the dispatcher on its well-known address.
 	conn, err := grpc.Dial(
 		yggdDispatchSocketAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
