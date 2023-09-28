@@ -36,7 +36,6 @@ func main() {
 	defer logFile.Close()
 
 	config = loadConfigOrDefault(configFilePath)
-	log.Infoln("Configuration loaded: ", config)
 	defer os.Remove(*config.TemporaryWorkerDirectory)
 
 	// Dial the dispatcher on its well-known address.

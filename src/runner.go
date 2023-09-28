@@ -35,20 +35,20 @@ var verificationArgs = []string{
 
 // Verify that no one tampered with yaml file
 func verifyYamlFile(yamlData []byte) bool {
-
 	if !*config.VerifyYAML {
 		log.Warnln("WARNING: Playbook verification disabled.")
 		return true
 	}
 
-	// --payload here will be a no-op because no upload is performed when using the verifier
-	//   but, it will allow us to update the egg!
-
 	env := os.Environ()
-
 	if !*config.InsightsCoreGPGCheck {
+		log.Infoln("Calling insights-client with --no-gpg to skip signature validation...")
+		// --payload here will be a no-op because no upload is performed when
+		// using the verifier but, it will allow us to update the egg!
 		verificationArgs = append(verificationArgs, "--no-gpg")
 		env = append(env, "BYPASS_GPG=True")
+	} else {
+		log.Infoln("Verifying gpg signature with insights-clieht")
 	}
 
 	cmd := exec.Command(verificationCommand, verificationArgs...)
@@ -72,8 +72,14 @@ func verifyYamlFile(yamlData []byte) bool {
 
 	output, err := cmd.Output()
 	if err != nil {
-		log.Errorln("ERROR: Unable to verify yaml file:", string(output), err)
+		log.Errorln("Unable to verify yaml file:", string(output), err)
 		return false
+	}
+
+	if !*config.InsightsCoreGPGCheck {
+		log.Infoln("GPG verification is disabled and thus considered as valid")
+	} else {
+		log.Infoln("Signature of yaml file is valid")
 	}
 	return true
 }
@@ -103,13 +109,11 @@ func processSignedScript(incomingContent []byte) string {
 	}
 
 	// Verify signature
-	log.Infoln("Verifying signature ...")
 	signatureIsValid := verifyYamlFile(incomingContent)
 	if !signatureIsValid {
 		errorMsg := "Signature of yaml file is invalid"
 		return errorMsg
 	}
-	log.Infoln("Signature of yaml file is valid")
 
 	// Parse the YAML data into array consisting of items of expected structure
 	var signedYamlArray []signedYamlContent
