@@ -48,7 +48,7 @@ func verifyYamlFile(yamlData []byte) bool {
 		verificationArgs = append(verificationArgs, "--no-gpg")
 		env = append(env, "BYPASS_GPG=True")
 	} else {
-		log.Infoln("Verifying gpg signature with insights-clieht")
+		log.Infoln("Calling insights-client with gpg signature validation...")
 	}
 
 	cmd := exec.Command(verificationCommand, verificationArgs...)
