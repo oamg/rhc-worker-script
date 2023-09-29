@@ -1,4 +1,4 @@
-package main
+package internal
 
 import (
 	"bytes"
@@ -99,6 +99,7 @@ type Config struct {
 	VerifyYAML               *bool   `yaml:"verify_yaml,omitempty"`
 	InsightsCoreGPGCheck     *bool   `yaml:"insights_core_gpg_check,omitempty"`
 	TemporaryWorkerDirectory *string `yaml:"temporary_worker_directory,omitempty"`
+	Protocol				 *string `yaml:"protocol,omitempty"`
 }
 
 // Set default values for the Config struct

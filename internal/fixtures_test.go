@@ -1,4 +1,4 @@
-package main
+package internal
 
 // Example of incoming YAML data structure for test purposes
 var ExampleYamlData = []byte(
