@@ -11,14 +11,14 @@
 	coverage-html
 
 # Project constants
-VERSION ?= 0.3
+VERSION ?= 0.4
 PKGNAME ?= rhc-worker-script
 GO_SOURCES := $(wildcard src/*.go)
 PYTHON ?= python3
 PIP ?= pip3
 VENV ?= .venv3
 PRE_COMMIT ?= pre-commit
-GO_VERSION ?= 1.16
+GO_VERSION ?= 1.19
 CLIENT_ID ?= 00000000-0000-0000-0000-0000000000000
 SERVED_FILENAME ?= example.yml
 
