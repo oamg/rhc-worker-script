@@ -1,4 +1,4 @@
-package main
+package internal
 
 import (
 	"context"
@@ -73,13 +73,7 @@ func sendDataToDispatcher(data *pb.Data) *pb.Data {
 	return data
 }
 
-// jobServer implements the Worker gRPC service as defined by the yggdrasil
-// gRPC protocol. It accepts Assignment messages, unmarshals the data into a
-// string, and echoes the content back to the Dispatch service by calling the
-// "Finish" method.
-type jobServer struct {
-	pb.UnimplementedWorkerServer
-}
+
 
 // Send is the implementation of the "Send" method of the Worker gRPC service.
 // It executes a temporary script, reads its output, and sends a message

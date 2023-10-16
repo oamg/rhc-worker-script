@@ -1,4 +1,4 @@
-package main
+package internal
 
 import (
 	"fmt"
@@ -18,7 +18,7 @@ var sosReportFile = "rhc-worker-script-logs"
 // write to both standard output and the log file, and enables optional log features
 // such as date-time, filename, and line number.
 // Returns a pointer to an os.File representing the opened log file.
-func setupLogger(logFolder string, fileName string) *os.File {
+func SetupLogger(logFolder string, fileName string) *os.File {
 	if err := checkAndCreateDirectory(logFolder); err != nil {
 		log.Error(err)
 	}
