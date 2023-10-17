@@ -14,13 +14,13 @@
 
 # EL7 doesn't define go_arches (it is available in go-srpm-macros which is EL8+)
 %if !%{defined go_arches}
-%define go_arches x86_64 s390x ppc64le
+%define go_arches x86_64
 %endif
 
-%global use_go_toolset_1_16 0%{?rhel} == 7 && !%{defined centos}
+%global use_go_toolset_1_19 0%{?rhel} == 7 && !%{defined centos}
 
 Name:           %{repo_name}
-Version:        0.4
+Version:        0.5
 Release:        1%{?dist}
 Summary:        Worker executing scripts on hosts managed by Red Hat Insights
 
@@ -29,8 +29,8 @@ URL:            https://github.com/%{repo_orgname}/%{repo_name}
 Source0:        %{url}/releases/download/v%{version}/%{name}-%{version}.tar.gz
 ExclusiveArch:  %{go_arches}
 
-%if %{use_go_toolset_1_16}
-BuildRequires:  go-toolset-1.16-golang
+%if %{use_go_toolset_1_19}
+BuildRequires:  go-toolset-1.19-golang
 %else
 BuildRequires:  golang
 %endif
@@ -49,8 +49,8 @@ ln -fs $(pwd)/src _gopath/src/%{binary_name}-%{version}
 ln -fs $(pwd)/vendor _gopath/src/%{binary_name}-%{version}/vendor
 export GOPATH=$(pwd)/_gopath
 pushd _gopath/src/%{binary_name}-%{version}
-%if %{use_go_toolset_1_16}
-scl enable go-toolset-1.16 -- %{gobuild}
+%if %{use_go_toolset_1_19}
+scl enable go-toolset-1.19 -- %{gobuild}
 %else
 %{gobuild}
 %endif
@@ -87,6 +87,14 @@ EOF
 %config %{rhc_worker_conf_dir}/rhc-worker-script.yml
 
 %changelog
+
+* Mon Oct 16 2023 Rodolfo Olivieri <rolivier@redhat.com> 0.5-1
+- Rebuild against newer golang which addresses CVE-2023-39325 and CVE-2023-44487
+- Fix OpenScanHub defects related to runtime code
+- Update specfile to include default config file
+- Improve logging when config file can't be used and default values are used instead
+- Move the logging init to be before anything else
+- Improve logging when insights_core_gpg_check is disabled
 
 * Thu Aug 10 2023 Rodolfo Olivieri <rolivier@redhat.com> 0.4-1
 - Update specfile binary name generation
