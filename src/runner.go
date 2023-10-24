@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	"git.sr.ht/~spc/go-log"
 	"gopkg.in/yaml.v3"
@@ -85,6 +86,74 @@ func setEnvVariablesForCommand(cmd *exec.Cmd, variables map[string]string) {
 	}
 }
 
+// Runs given command and sends stdout to given channel. doneCh used to signal that execution ended.
+func runCommandWithOutput(cmd *exec.Cmd, outputCh chan string, doneCh chan bool) {
+	cmdOutput, err := cmd.StdoutPipe()
+	if err != nil {
+		outputCh <- fmt.Sprintf("Error: %v", err)
+		return
+	}
+
+	if err := cmd.Start(); err != nil {
+		outputCh <- fmt.Sprintf("Error: %v", err)
+		return
+	}
+
+	go func() {
+		defer close(outputCh)
+
+		buf := make([]byte, 1024)
+		for {
+			n, err := cmdOutput.Read(buf)
+			if err != nil {
+				return
+			}
+			outputCh <- string(buf[:n])
+		}
+	}()
+
+	if err := cmd.Wait(); err != nil {
+		log.Errorln("Failed to execute script: ", err)
+		outputCh <- fmt.Sprintf("Error: %v", err)
+	}
+
+	doneCh <- true // Signal that the command has finished
+}
+
+// Executes command and reports status back to dispatcher
+func executeCommandWithProgress(command string, interpreter string, variables map[string]string) string {
+	log.Infoln("Executing script...")
+
+	cmd := exec.Command(interpreter, command)
+	setEnvVariablesForCommand(cmd, variables)
+
+	outputCh := make(chan string)
+	doneCh := make(chan bool)
+	go runCommandWithOutput(cmd, outputCh, doneCh)
+
+	ticker := time.NewTicker(10 * time.Second)
+	defer ticker.Stop()
+
+	var bufferedOutput string
+
+	for {
+		select {
+		case output := <-outputCh:
+			bufferedOutput += output
+		case <-ticker.C:
+			// NOTE: the output so far
+			// TODO: this has to be sent to dispatcher
+			fmt.Print(bufferedOutput)
+
+			// bufferedOutput = "" // Clear the buffer after printing
+			// fmt.Println("Still running...")
+		case <-doneCh:
+			// Execution is done
+			return bufferedOutput
+		}
+	}
+}
+
 // Parses given yaml data.
 // If signature is valid then extracts the script to temporary file,
 // sets env variables if present and then runs the script.
@@ -120,22 +189,9 @@ func processSignedScript(incomingContent []byte) string {
 		[]byte(yamlContent.Vars.Content), *config.TemporaryWorkerDirectory)
 	defer os.Remove(scriptFileName)
 
-	log.Infoln("Processing script ...")
-
 	// Execute script
-	log.Infoln("Executing script...")
-	cmd := exec.Command(yamlContent.Vars.Interpreter, scriptFileName) //nolint:gosec
-	setEnvVariablesForCommand(cmd, yamlContent.Vars.ContentVars)
-
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Errorln("Failed to execute script: ", err)
-		if len(out) > 0 {
-			log.Errorln(string(out))
-		}
-		return ""
-	}
-
-	log.Infoln("Script executed successfully.")
-	return string(out)
+	log.Infoln("Processing script ...")
+	out := executeCommandWithProgress(
+		scriptFileName, yamlContent.Vars.Interpreter, yamlContent.Vars.ContentVars)
+	return out
 }
