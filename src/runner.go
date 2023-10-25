@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -98,7 +99,7 @@ func runCommandWithOutput(cmd *exec.Cmd, outputCh chan string, doneCh chan bool)
 
 	go func() {
 		// NOTE: This could be set by config or by env variable in received yaml
-		var bufferSize = 512
+		var bufferSize = 256
 		buf := make([]byte, bufferSize)
 		for {
 			log.Infoln("Writing to buffer ...")
@@ -106,7 +107,7 @@ func runCommandWithOutput(cmd *exec.Cmd, outputCh chan string, doneCh chan bool)
 			log.Infoln("Buffer full ...")
 
 			if err != nil {
-				if err == io.EOF {
+				if errors.Is(err, io.EOF) {
 					log.Infoln("Command stdout closed")
 					return
 				}
