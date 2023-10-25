@@ -143,12 +143,12 @@ func executeCommandWithProgress(command string, interpreter string, variables ma
 		case <-ticker.C:
 			// NOTE: the output so far
 			// TODO: this has to be sent to dispatcher
-			fmt.Print(bufferedOutput)
-
-			// bufferedOutput = "" // Clear the buffer after printing
-			// fmt.Println("Still running...")
+			log.Infoln("Still running ...")
+			log.Infoln(bufferedOutput)
 		case <-doneCh:
 			// Execution is done
+			log.Infoln("Execution done ...")
+			log.Infoln(bufferedOutput)
 			return bufferedOutput
 		}
 	}
