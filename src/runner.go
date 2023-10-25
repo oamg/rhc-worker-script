@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"strings"
@@ -91,26 +92,38 @@ func runCommandWithOutput(cmd *exec.Cmd, outputCh chan string, doneCh chan bool)
 	cmdOutput, err := cmd.StdoutPipe()
 	if err != nil {
 		outputCh <- fmt.Sprintf("Error: %v", err)
-		return
-	}
-
-	if err := cmd.Start(); err != nil {
-		outputCh <- fmt.Sprintf("Error: %v", err)
+		doneCh <- true
 		return
 	}
 
 	go func() {
-		defer close(outputCh)
-
-		buf := make([]byte, 1024)
+		// NOTE: This could be set by config or by env variable in received yaml
+		var bufferSize = 512
+		buf := make([]byte, bufferSize)
 		for {
+			log.Infoln("Writing to buffer ...")
 			n, err := cmdOutput.Read(buf)
+			log.Infoln("Buffer full ...")
+
 			if err != nil {
+				if err == io.EOF {
+					log.Infoln("Command stdout closed")
+					return
+				}
+				log.Infoln("Error after buffer closed")
 				return
 			}
+			log.Infoln("Writing data to output channel ...")
 			outputCh <- string(buf[:n])
+			buf = make([]byte, bufferSize)
 		}
 	}()
+
+	if err := cmd.Start(); err != nil {
+		outputCh <- fmt.Sprintf("Error: %v", err)
+		doneCh <- true
+		return
+	}
 
 	if err := cmd.Wait(); err != nil {
 		log.Errorln("Failed to execute script: ", err)
@@ -127,28 +140,32 @@ func executeCommandWithProgress(command string, interpreter string, variables ma
 	cmd := exec.Command(interpreter, command)
 	setEnvVariablesForCommand(cmd, variables)
 
+	var bufferedOutput string
 	outputCh := make(chan string)
+	defer close(outputCh)
 	doneCh := make(chan bool)
+	defer close(doneCh)
+
 	go runCommandWithOutput(cmd, outputCh, doneCh)
 
 	ticker := time.NewTicker(10 * time.Second)
 	defer ticker.Stop()
 
-	var bufferedOutput string
-
 	for {
 		select {
 		case output := <-outputCh:
+			// TODO: this has to be sent to dispatcher back to report to UI
+			// the idea is to send partial output if buffer with given size sent the output to channel
+			log.Info(output)
+
+			// Append partial to all output
 			bufferedOutput += output
 		case <-ticker.C:
-			// NOTE: the output so far
-			// TODO: this has to be sent to dispatcher
+			// NOTE: If just message without output is also okay we could send just still running
 			log.Infoln("Still running ...")
-			log.Infoln(bufferedOutput)
 		case <-doneCh:
 			// Execution is done
 			log.Infoln("Execution done ...")
-			log.Infoln(bufferedOutput)
 			return bufferedOutput
 		}
 	}
