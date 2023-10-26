@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"io"
@@ -97,26 +98,28 @@ func runCommandWithOutput(cmd *exec.Cmd, outputCh chan string, doneCh chan bool)
 		return
 	}
 
-	go func() {
-		// NOTE: This could be set by config or by env variable in received yaml
-		var bufferSize = 256
-		buf := make([]byte, bufferSize)
-		for {
-			log.Infoln("Writing to buffer ...")
-			n, err := cmdOutput.Read(buf)
-			log.Infoln("Buffer full ...")
+	dataReadCh := make(chan bool)
+	defer close(dataReadCh)
 
-			if err != nil {
-				if errors.Is(err, io.EOF) {
-					log.Infoln("Command stdout closed")
-					return
-				}
-				log.Infoln("Error after buffer closed")
+	go func() {
+		defer func() {
+			dataReadCh <- true
+		}()
+
+		reader := bufio.NewReader(cmdOutput)
+
+		for {
+			line, err := reader.ReadString('\n')
+			if errors.Is(err, io.EOF) {
+				log.Infoln("Read ended with EOF")
+				break
+			} else if err != nil {
+				log.Infoln("Read ended with error", err)
+				outputCh <- fmt.Sprintf("Error reading from stdout: %v", err)
 				return
 			}
-			log.Infoln("Writing data to output channel ...")
-			outputCh <- string(buf[:n])
-			buf = make([]byte, bufferSize)
+			log.Infoln("Read line: ", line)
+			outputCh <- line
 		}
 	}()
 
@@ -125,6 +128,10 @@ func runCommandWithOutput(cmd *exec.Cmd, outputCh chan string, doneCh chan bool)
 		doneCh <- true
 		return
 	}
+
+	// NOTE: need to block here before goroutine finishes so wait doesn't close the stdout pipe
+	log.Infoln("Waiting to collect all stdout from running command")
+	<-dataReadCh
 
 	if err := cmd.Wait(); err != nil {
 		log.Errorln("Failed to execute script: ", err)
