@@ -90,10 +90,10 @@ func setEnvVariablesForCommand(cmd *exec.Cmd, variables map[string]string) {
 }
 
 // Runs given command and sends stdout to given channel. doneCh used to signal that execution ended.
-func runCommandWithOutput(cmd *exec.Cmd, outputCh chan string, doneCh chan bool) {
+func runCommandWithOutput(cmd *exec.Cmd, outputCh chan []byte, doneCh chan bool) {
 	cmdOutput, err := cmd.StdoutPipe()
 	if err != nil {
-		outputCh <- fmt.Sprintf("Error: %v", err)
+		log.Errorln("Error: ", err)
 		doneCh <- true
 		return
 	}
@@ -102,29 +102,34 @@ func runCommandWithOutput(cmd *exec.Cmd, outputCh chan string, doneCh chan bool)
 	defer close(dataReadCh)
 
 	go func() {
-		defer func() {
-			dataReadCh <- true
-		}()
-
 		reader := bufio.NewReader(cmdOutput)
+		readBuffer := 1024
 
 		for {
-			line, err := reader.ReadString('\n')
-			if errors.Is(err, io.EOF) {
+			data, err := reader.Peek(readBuffer)
+			switch {
+			case errors.Is(err, io.EOF):
 				log.Infoln("Read ended with EOF")
-				break
-			} else if err != nil {
-				log.Infoln("Read ended with error", err)
-				outputCh <- fmt.Sprintf("Error reading from stdout: %v", err)
+				outputCh <- data
+				dataReadCh <- true
 				return
+			case err == nil || errors.Is(err, io.ErrShortBuffer):
+				log.Infoln("Read n bytes", err)
+				if len(data) != 0 {
+					outputCh <- data
+					_, err := reader.Discard(len(data))
+					if err != nil {
+						// TODO: what should I do if I want to move the reader
+						// If I do nothing it can only cause it to be read twice
+						log.Errorln("Discard failed", err)
+					}
+				}
 			}
-			log.Infoln("Read line: ", line)
-			outputCh <- line
 		}
 	}()
 
 	if err := cmd.Start(); err != nil {
-		outputCh <- fmt.Sprintf("Error: %v", err)
+		log.Errorln("Error: ", err)
 		doneCh <- true
 		return
 	}
@@ -135,7 +140,6 @@ func runCommandWithOutput(cmd *exec.Cmd, outputCh chan string, doneCh chan bool)
 
 	if err := cmd.Wait(); err != nil {
 		log.Errorln("Failed to execute script: ", err)
-		outputCh <- fmt.Sprintf("Error: %v", err)
 	}
 
 	doneCh <- true // Signal that the command has finished
@@ -148,8 +152,8 @@ func executeCommandWithProgress(command string, interpreter string, variables ma
 	cmd := exec.Command(interpreter, command)
 	setEnvVariablesForCommand(cmd, variables)
 
-	var bufferedOutput string
-	outputCh := make(chan string)
+	var bufferedOutput []byte
+	outputCh := make(chan []byte)
 	defer close(outputCh)
 	doneCh := make(chan bool)
 	defer close(doneCh)
@@ -162,19 +166,16 @@ func executeCommandWithProgress(command string, interpreter string, variables ma
 	for {
 		select {
 		case output := <-outputCh:
-			// TODO: this has to be sent to dispatcher back to report to UI
-			// the idea is to send partial output if buffer with given size sent the output to channel
-			log.Info(output)
-
-			// Append partial to all output
-			bufferedOutput += output
+			bufferedOutput = append(bufferedOutput, output...)
 		case <-ticker.C:
 			// NOTE: If just message without output is also okay we could send just still running
 			log.Infoln("Still running ...")
+			log.Infoln(string(bufferedOutput))
 		case <-doneCh:
 			// Execution is done
 			log.Infoln("Execution done ...")
-			return bufferedOutput
+			log.Infoln(string(bufferedOutput))
+			return string(bufferedOutput)
 		}
 	}
 }
