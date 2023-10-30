@@ -2,9 +2,7 @@ package main
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
-	"io"
 	"os"
 	"os/exec"
 	"strings"
@@ -102,30 +100,50 @@ func runCommandWithOutput(cmd *exec.Cmd, outputCh chan []byte, doneCh chan bool)
 	defer close(dataReadCh)
 
 	go func() {
-		reader := bufio.NewReader(cmdOutput)
-		readBuffer := 1024
+		scanner := bufio.NewScanner(cmdOutput)
+		// TODO: not good for a buffer to have constant size ...
+		// Need to have some implementation of reseting the full byte slice
+		bufferSize := 1024
+		bufferByteSlice := make([]byte, bufferSize)
+		scanner.Buffer(bufferByteSlice, bufferSize/4)
 
-		for {
-			data, err := reader.Peek(readBuffer)
-			switch {
-			case errors.Is(err, io.EOF):
-				log.Infoln("Read ended with EOF")
-				outputCh <- data
-				dataReadCh <- true
-				return
-			case err == nil || errors.Is(err, io.ErrShortBuffer):
-				log.Infoln("Read n bytes", err)
-				if len(data) != 0 {
-					outputCh <- data
-					_, err := reader.Discard(len(data))
-					if err != nil {
-						// TODO: what should I do if I want to move the reader
-						// If I do nothing it can only cause it to be read twice
-						log.Errorln("Discard failed", err)
-					}
-				}
+		for scanner.Scan() {
+			line := scanner.Text()
+			outputCh <- []byte(line + "\n")
+
+			if cap(bufferByteSlice) == bufferSize {
+				bufferByteSlice = make([]byte, bufferSize)
 			}
 		}
+		dataReadCh <- true
+
+		// NOTE: below code also works but it's dependent on default go buffer
+		// in our case it just means that the stdout is reported at the end
+
+		// reader := bufio.NewReader(cmdOutput)
+		// readBuffer := 1024
+
+		// for {
+		// 	data, err := reader.Peek(readBuffer)
+		// 	switch {
+		// 	case errors.Is(err, io.EOF):
+		// 		log.Infoln("Read ended with EOF")
+		// 		outputCh <- data
+		// 		dataReadCh <- true
+		// 		return
+		// 	case err == nil || errors.Is(err, io.ErrShortBuffer):
+		// 		log.Infoln("Read n bytes", err)
+		// 		if len(data) != 0 {
+		// 			outputCh <- data
+		// 			_, err := reader.Discard(len(data))
+		// 			if err != nil {
+		// 				// TODO: what should I do if I want to move the reader
+		// 				// If I do nothing it can only cause it to be read twice
+		// 				log.Errorln("Discard failed", err)
+		// 			}
+		// 		}
+		// 	}
+		// }
 	}()
 
 	if err := cmd.Start(); err != nil {
@@ -174,7 +192,6 @@ func executeCommandWithProgress(command string, interpreter string, variables ma
 		case <-doneCh:
 			// Execution is done
 			log.Infoln("Execution done ...")
-			log.Infoln(string(bufferedOutput))
 			return string(bufferedOutput)
 		}
 	}
