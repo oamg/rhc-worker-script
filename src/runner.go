@@ -100,31 +100,40 @@ func runCommandWithOutput(cmd *exec.Cmd, outputCh chan []byte, doneCh chan bool)
 	defer close(dataReadCh)
 
 	go func() {
-		scanner := bufio.NewScanner(cmdOutput)
 		// TODO: not good for a buffer to have constant size ...
 		// Need to have some implementation of reseting the full byte slice
+		scanner := bufio.NewScanner(cmdOutput)
 		bufferSize := 1024
-		bufferByteSlice := make([]byte, bufferSize)
-		scanner.Buffer(bufferByteSlice, bufferSize/4)
+		scanner.Buffer(make([]byte, bufferSize), bufferSize/4)
 
-		for scanner.Scan() {
-			line := scanner.Text()
-			outputCh <- []byte(line + "\n")
+		for {
+			for scanner.Scan() {
+				line := scanner.Text()
+				outputCh <- []byte(line + "\n")
+			}
 
-			if cap(bufferByteSlice) == bufferSize {
-				bufferByteSlice = make([]byte, bufferSize)
+			if err := scanner.Err(); err == nil {
+				// Scanner reached EOF
+				break
+			} else {
+				// TODO: error bufio.Scanner: token too long but it looks like we are not loosing data this way
+				log.Infoln(err)
+				scanner = bufio.NewScanner(cmdOutput)
+				scanner.Buffer(make([]byte, bufferSize), bufferSize/4)
 			}
 		}
 		dataReadCh <- true
+
+		//////////
 
 		// NOTE: below code also works but it's dependent on default go buffer
 		// in our case it just means that the stdout is reported at the end
 
 		// reader := bufio.NewReader(cmdOutput)
-		// readBuffer := 1024
+		// readNBufferBytes := 1024
 
 		// for {
-		// 	data, err := reader.Peek(readBuffer)
+		// 	data, err := reader.Peek(readNBufferBytes)
 		// 	switch {
 		// 	case errors.Is(err, io.EOF):
 		// 		log.Infoln("Read ended with EOF")
