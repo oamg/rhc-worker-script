@@ -100,9 +100,8 @@ func runCommandWithOutput(cmd *exec.Cmd, outputCh chan []byte, doneCh chan bool)
 	defer close(dataReadCh)
 
 	go func() {
-		// TODO: not good for a buffer to have constant size ...
-		// Need to have some implementation of reseting the full byte slice
 		scanner := bufio.NewScanner(cmdOutput)
+		// NOTE: Not sure how to determine how big should the initial buffer be
 		bufferSize := 1024
 		scanner.Buffer(make([]byte, bufferSize), bufferSize/4)
 
@@ -113,46 +112,16 @@ func runCommandWithOutput(cmd *exec.Cmd, outputCh chan []byte, doneCh chan bool)
 			}
 
 			if err := scanner.Err(); err == nil {
-				// Scanner reached EOF
+				// Scanner reached EOF = end of stdout of script
 				break
-			} else {
-				// TODO: error bufio.Scanner: token too long but it looks like we are not loosing data this way
-				log.Infoln(err)
-				scanner = bufio.NewScanner(cmdOutput)
-				scanner.Buffer(make([]byte, bufferSize), bufferSize/4)
 			}
+			// TODO: test we are not loosing data
+			// error bufio.Scanner: token too long
+			// Create new scanner with empty buffer
+			scanner = bufio.NewScanner(cmdOutput)
+			scanner.Buffer(make([]byte, bufferSize), bufferSize/4)
 		}
 		dataReadCh <- true
-
-		//////////
-
-		// NOTE: below code also works but it's dependent on default go buffer
-		// in our case it just means that the stdout is reported at the end
-
-		// reader := bufio.NewReader(cmdOutput)
-		// readNBufferBytes := 1024
-
-		// for {
-		// 	data, err := reader.Peek(readNBufferBytes)
-		// 	switch {
-		// 	case errors.Is(err, io.EOF):
-		// 		log.Infoln("Read ended with EOF")
-		// 		outputCh <- data
-		// 		dataReadCh <- true
-		// 		return
-		// 	case err == nil || errors.Is(err, io.ErrShortBuffer):
-		// 		log.Infoln("Read n bytes", err)
-		// 		if len(data) != 0 {
-		// 			outputCh <- data
-		// 			_, err := reader.Discard(len(data))
-		// 			if err != nil {
-		// 				// TODO: what should I do if I want to move the reader
-		// 				// If I do nothing it can only cause it to be read twice
-		// 				log.Errorln("Discard failed", err)
-		// 			}
-		// 		}
-		// 	}
-		// }
 	}()
 
 	if err := cmd.Start(); err != nil {
