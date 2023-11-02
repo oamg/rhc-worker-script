@@ -42,13 +42,13 @@ func verifyYamlFile(yamlData []byte) bool {
 
 	env := os.Environ()
 	if !*config.InsightsCoreGPGCheck {
-		log.Infoln("Calling insights-client with --no-gpg to skip signature validation...")
+		log.Infoln("Calling insights-client with --no-gpg to skip egg signature validation...")
 		// --payload here will be a no-op because no upload is performed when
 		// using the verifier but, it will allow us to update the egg!
 		verificationArgs = append(verificationArgs, "--no-gpg")
 		env = append(env, "BYPASS_GPG=True")
 	} else {
-		log.Infoln("Calling insights-client with gpg signature validation...")
+		log.Infoln("Calling insights-client with egg gpg signature validation...")
 	}
 
 	cmd := exec.Command(verificationCommand, verificationArgs...)
@@ -77,10 +77,9 @@ func verifyYamlFile(yamlData []byte) bool {
 	}
 
 	if !*config.InsightsCoreGPGCheck {
-		log.Infoln("GPG verification is disabled and thus considered as valid")
-	} else {
-		log.Infoln("Signature of yaml file is valid")
+		log.Warnln("insights-client egg gpg verification was disabled and thus considered as valid")
 	}
+	log.Infoln("Signature of yaml file is valid")
 	return true
 }
 
