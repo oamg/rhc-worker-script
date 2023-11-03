@@ -97,7 +97,6 @@ func constructMetadata(receivedMetadata map[string]string, contentType string) m
 type Config struct {
 	Directive                *string `yaml:"directive,omitempty"`
 	VerifyYAML               *bool   `yaml:"verify_yaml,omitempty"`
-	InsightsCoreGPGCheck     *bool   `yaml:"insights_core_gpg_check,omitempty"`
 	TemporaryWorkerDirectory *string `yaml:"temporary_worker_directory,omitempty"`
 }
 
@@ -114,12 +113,6 @@ func setDefaultValues(config *Config) {
 		defaultVerifyYamlValue := true
 		log.Infof("config 'verify_yaml' value is empty default value (%t) will be used", defaultVerifyYamlValue)
 		config.VerifyYAML = &defaultVerifyYamlValue
-	}
-
-	if config.InsightsCoreGPGCheck == nil {
-		defaultGpgCheckValue := true
-		log.Infof("config 'insights_core_gpg_check' value is empty default value (%t) will be used", defaultGpgCheckValue)
-		config.InsightsCoreGPGCheck = &defaultGpgCheckValue
 	}
 
 	if config.TemporaryWorkerDirectory == nil {
@@ -146,9 +139,6 @@ func loadYAMLConfig(filePath string) *Config {
 }
 
 // Load config from given filepath, if config doesn't exist then default config values are used
-// Directive = rhc-worker-script
-// VerifyYAML = "1"
-// InsightsCoreGPGCheck = "1"
 func loadConfigOrDefault(filePath string) *Config {
 	config := &Config{}
 	_, err := os.Stat(filePath)

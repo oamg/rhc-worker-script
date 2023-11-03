@@ -113,12 +113,10 @@ func TestProcessData(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			shouldVerifyYaml := false
-			shouldDoInsightsCoreGPGCheck := false
 			temporaryWorkerDirectory := t.TempDir()
 			config = &Config{
 				VerifyYAML:               &shouldVerifyYaml,
 				TemporaryWorkerDirectory: &temporaryWorkerDirectory,
-				InsightsCoreGPGCheck:     &shouldDoInsightsCoreGPGCheck,
 			}
 
 			returnURL := "bar"

@@ -142,7 +142,6 @@ func createTempYAMLFile(content string) (string, error) {
 func compareConfigs(c1, c2 *Config) bool {
 	return *c1.Directive == *c2.Directive &&
 		*c1.VerifyYAML == *c2.VerifyYAML &&
-		*c1.InsightsCoreGPGCheck == *c2.InsightsCoreGPGCheck &&
 		*c1.TemporaryWorkerDirectory == *c2.TemporaryWorkerDirectory
 }
 
@@ -160,7 +159,6 @@ const validYAMLData = `
 directive: "rhc-worker-script"
 verify_yaml: true
 verify_yaml_version_check: true
-insights_core_gpg_check: true
 temporary_worker_directory: "/var/lib/rhc-worker-script"
 `
 
@@ -172,7 +170,6 @@ func TestLoadConfigOrDefault(t *testing.T) {
 	expectedConfig := &Config{
 		Directive:                strPtr("rhc-worker-script"),
 		VerifyYAML:               boolPtr(true),
-		InsightsCoreGPGCheck:     boolPtr(true),
 		TemporaryWorkerDirectory: strPtr("/var/lib/rhc-worker-script"),
 	}
 
@@ -239,13 +236,13 @@ func TestSetDefaultValues(t *testing.T) {
 	}{
 		{
 			name: "test default values",
-			args: args{config: &Config{nil, nil, nil, nil}},
-			want: args{config: &Config{strPtr("rhc-worker-script"), boolPtr(true), boolPtr(true), strPtr("/var/lib/rhc-worker-script")}},
+			args: args{config: &Config{nil, nil, nil}},
+			want: args{config: &Config{strPtr("rhc-worker-script"), boolPtr(true), strPtr("/var/lib/rhc-worker-script")}},
 		},
 		{
 			name: "test non default values",
-			args: args{config: &Config{strPtr("rhc-worker-script"), boolPtr(true), boolPtr(true), strPtr("/var/lib/rhc-worker-script")}},
-			want: args{config: &Config{strPtr("rhc-worker-script"), boolPtr(true), boolPtr(true), strPtr("/var/lib/rhc-worker-script")}},
+			args: args{config: &Config{strPtr("rhc-worker-script"), boolPtr(true), strPtr("/var/lib/rhc-worker-script")}},
+			want: args{config: &Config{strPtr("rhc-worker-script"), boolPtr(true), strPtr("/var/lib/rhc-worker-script")}},
 		},
 	}
 	for _, tt := range tests {

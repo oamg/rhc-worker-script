@@ -36,12 +36,10 @@ func TestProcessSignedScript(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			shouldVerifyYaml := tc.verifyYAML
-			shouldDoInsightsCoreGPGCheck := tc.verifyYAML // Assume the same value for simplicity
 			temporaryWorkerDirectory := t.TempDir()
 			config = &Config{
 				VerifyYAML:               &shouldVerifyYaml,
 				TemporaryWorkerDirectory: &temporaryWorkerDirectory,
-				InsightsCoreGPGCheck:     &shouldDoInsightsCoreGPGCheck,
 			}
 
 			defer os.RemoveAll(temporaryWorkerDirectory)
@@ -56,51 +54,45 @@ func TestProcessSignedScript(t *testing.T) {
 
 func TestVerifyYamlFile(t *testing.T) {
 	testCases := []struct {
-		name                         string
-		yamlData                     []byte
-		verifyYAML                   bool
-		verificationCommand          string
-		verificationArgs             []string
-		shouldDoInsightsCoreGPGCheck bool
-		expectedResult               bool
+		name                string
+		yamlData            []byte
+		verifyYAML          bool
+		verificationCommand string
+		verificationArgs    []string
+		expectedResult      bool
 	}{
 		{
-			name:                         "verification disabled",
-			verifyYAML:                   false,
-			yamlData:                     ExampleYamlData,
-			shouldDoInsightsCoreGPGCheck: false,
-			expectedResult:               true,
+			name:           "verification disabled",
+			verifyYAML:     false,
+			yamlData:       ExampleYamlData,
+			expectedResult: true,
 		},
 		{
-			name:                         "verification enabled and verification succeeds",
-			verifyYAML:                   true,
-			yamlData:                     ExampleYamlData,
-			verificationCommand:          "true",
-			verificationArgs:             []string{},
-			shouldDoInsightsCoreGPGCheck: false,
-			expectedResult:               true,
+			name:                "verification enabled and verification succeeds",
+			verifyYAML:          true,
+			yamlData:            ExampleYamlData,
+			verificationCommand: "true",
+			verificationArgs:    []string{},
+			expectedResult:      true,
 		},
 		{
-			name:                         "verification is enabled and verification fails",
-			verifyYAML:                   true,
-			yamlData:                     ExampleYamlData,
-			verificationCommand:          "false",
-			verificationArgs:             []string{},
-			shouldDoInsightsCoreGPGCheck: false,
-			expectedResult:               false,
+			name:                "verification is enabled and verification fails",
+			verifyYAML:          true,
+			yamlData:            ExampleYamlData,
+			verificationCommand: "false",
+			verificationArgs:    []string{},
+			expectedResult:      false,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			shouldVerifyYaml := tc.verifyYAML
-			shouldDoInsightsCoreGPGCheck := tc.shouldDoInsightsCoreGPGCheck
 			verificationCommand = tc.verificationCommand
 			verificationArgs = tc.verificationArgs
 
 			config = &Config{
-				VerifyYAML:           &shouldVerifyYaml,
-				InsightsCoreGPGCheck: &shouldDoInsightsCoreGPGCheck,
+				VerifyYAML: &shouldVerifyYaml,
 			}
 
 			result := verifyYamlFile(tc.yamlData)
