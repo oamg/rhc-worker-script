@@ -135,9 +135,6 @@ directive: "rhc-worker-script"
 # whether to verify incoming yaml files
 verify_yaml: true
 
-# perform the insights-client GPG check on the insights-core egg
-insights_core_gpg_check: true
-
 # temporary directory in which the temporary files with executed bash scripts are created
 temporary_worker_directory: "/var/lib/rhc-worker-script"
 ```

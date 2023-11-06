@@ -72,9 +72,6 @@ directive: "%{name}"
 # whether to verify incoming yaml files
 verify_yaml: true
 
-# perform the insights-client GPG check on the insights-core egg
-insights_core_gpg_check: true
-
 # temporary directory in which the temporary script will be placed and executed.
 temporary_worker_directory: "/var/lib/rhc-worker-script"
 EOF
