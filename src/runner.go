@@ -127,9 +127,16 @@ func processSignedScript(incomingContent []byte) string {
 	cmd := exec.Command(yamlContent.Vars.Interpreter, scriptFileName) //nolint:gosec
 	setEnvVariablesForCommand(cmd, yamlContent.Vars.ContentVars)
 
-	out, err := cmd.Output()
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Errorln("Failed to execute script: ", err)
+		if exitError, ok := err.(*exec.ExitError); ok { //nolint:errorlint
+			// NOTE: -1 means signal termination or that the process hasn't finished
+			log.Errorln("Exit code: ", exitError.ExitCode())
+		}
+		if len(out) > 0 {
+			log.Errorln(string(out))
+		}
 		return ""
 	}
 
