@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	"git.sr.ht/~spc/go-log"
 	"gopkg.in/yaml.v3"
@@ -85,6 +87,94 @@ func setEnvVariablesForCommand(cmd *exec.Cmd, variables map[string]string) {
 	}
 }
 
+// Runs given command and sends stdout to given channel. doneCh used to signal that execution ended.
+func runCommandWithOutput(cmd *exec.Cmd, outputCh chan []byte, doneCh chan bool) {
+	cmdOutput, err := cmd.StdoutPipe()
+	if err != nil {
+		log.Errorln("Error: ", err)
+		doneCh <- true
+		return
+	}
+
+	dataReadCh := make(chan bool)
+	defer close(dataReadCh)
+
+	go func() {
+		scanner := bufio.NewScanner(cmdOutput)
+		// NOTE: Not sure how to determine how big should the initial buffer be
+		bufferSize := 1024
+		scanner.Buffer(make([]byte, bufferSize), bufferSize/4)
+
+		for {
+			for scanner.Scan() {
+				line := scanner.Text()
+				outputCh <- []byte(line + "\n")
+			}
+
+			if err := scanner.Err(); err == nil {
+				// Scanner reached EOF = end of stdout of script
+				break
+			}
+			// TODO: test we are not loosing data
+			// error bufio.Scanner: token too long
+			// Create new scanner with empty buffer
+			scanner = bufio.NewScanner(cmdOutput)
+			scanner.Buffer(make([]byte, bufferSize), bufferSize/4)
+		}
+		dataReadCh <- true
+	}()
+
+	if err := cmd.Start(); err != nil {
+		log.Errorln("Error: ", err)
+		doneCh <- true
+		return
+	}
+
+	// NOTE: need to block here before goroutine finishes so wait doesn't close the stdout pipe
+	log.Infoln("Waiting to collect all stdout from running command")
+	<-dataReadCh
+
+	if err := cmd.Wait(); err != nil {
+		log.Errorln("Failed to execute script: ", err)
+	}
+
+	doneCh <- true // Signal that the command has finished
+}
+
+// Executes command and reports status back to dispatcher
+func executeCommandWithProgress(command string, interpreter string, variables map[string]string) string {
+	log.Infoln("Executing script...")
+
+	cmd := exec.Command(interpreter, command)
+	setEnvVariablesForCommand(cmd, variables)
+
+	var bufferedOutput []byte
+	outputCh := make(chan []byte)
+	defer close(outputCh)
+	doneCh := make(chan bool)
+	defer close(doneCh)
+
+	go runCommandWithOutput(cmd, outputCh, doneCh)
+
+	ticker := time.NewTicker(10 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case output := <-outputCh:
+			bufferedOutput = append(bufferedOutput, output...)
+		case <-ticker.C:
+			// NOTE: If just message without output is also okay we could send just still running
+			log.Infoln("Still running ...")
+			log.Infoln(string(bufferedOutput))
+		case <-doneCh:
+			// Execution is done
+			log.Infoln("Execution done ...")
+			return string(bufferedOutput)
+		}
+	}
+}
+
 // Parses given yaml data.
 // If signature is valid then extracts the script to temporary file,
 // sets env variables if present and then runs the script.
@@ -120,22 +210,9 @@ func processSignedScript(incomingContent []byte) string {
 		[]byte(yamlContent.Vars.Content), *config.TemporaryWorkerDirectory)
 	defer os.Remove(scriptFileName)
 
-	log.Infoln("Processing script ...")
-
 	// Execute script
-	log.Infoln("Executing script...")
-	cmd := exec.Command(yamlContent.Vars.Interpreter, scriptFileName) //nolint:gosec
-	setEnvVariablesForCommand(cmd, yamlContent.Vars.ContentVars)
-
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Errorln("Failed to execute script: ", err)
-		if len(out) > 0 {
-			log.Errorln(string(out))
-		}
-		return ""
-	}
-
-	log.Infoln("Script executed successfully.")
-	return string(out)
+	log.Infoln("Processing script ...")
+	out := executeCommandWithProgress(
+		scriptFileName, yamlContent.Vars.Interpreter, yamlContent.Vars.ContentVars)
+	return out
 }
