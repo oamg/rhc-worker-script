@@ -20,7 +20,7 @@
 %global use_go_toolset_1_19 0%{?rhel} == 7 && !%{defined centos}
 
 Name:           %{repo_name}
-Version:        0.5
+Version:        0.6
 Release:        1%{?dist}
 Summary:        Worker executing scripts on hosts managed by Red Hat Insights
 
@@ -84,6 +84,11 @@ EOF
 %config %{rhc_worker_conf_dir}/rhc-worker-script.yml
 
 %changelog
+
+* Wed Feb 28 2024 Rodolfo Olivieri <rolivier@redhat.com> 0.6-1
+- Fix grpc to newest v1.59.x version
+- Remove insights_core_gpg_check from worker config
+- When script fails with exit code 1 we want to see the reason in logs
 
 * Mon Oct 16 2023 Rodolfo Olivieri <rolivier@redhat.com> 0.5-1
 - Rebuild against newer golang which addresses CVE-2023-39325 and CVE-2023-44487
