@@ -94,9 +94,9 @@ must change what playbook will be used during the message consumption in the
 [mqtt_publish.py](https://github.com/oamg/rhc-worker-script/blob/main/development/python/mqtt_publish.py#L22)
 file with the name that corresponds the ones present in `development/nginx/data`. Currently, the ones available are:
 
-1. [example_bash.yaml](https://github.com/oamg/rhc-worker-script/blob/main/development/nginx/data/example_bash.yaml)
-2. [example_python.yaml](https://github.com/oamg/rhc-worker-script/blob/main/development/nginx/data/example_python.yaml)
-3. [convert2rhel.yaml](https://github.com/oamg/rhc-worker-script/blob/main/development/nginx/data/convert2rhel.yaml)
+1. [example_bash.yml](https://github.com/oamg/rhc-worker-script/blob/main/development/nginx/data/example_bash.yml)
+2. [example_python.yml](https://github.com/oamg/rhc-worker-script/blob/main/development/nginx/data/example_python.yml)
+3. [convert2rhel.yml](https://github.com/oamg/rhc-worker-script/blob/main/development/nginx/data/convert2rhel.yml)
 
 #### Custom playbook
 
