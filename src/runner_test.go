@@ -35,6 +35,7 @@ func TestProcessSignedScript(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			scriptLogLevel := "info"
 			shouldVerifyYaml := tc.verifyYAML
 			temporaryWorkerDirectory := t.TempDir()
 			envMap := map[string]string{"NAME": "Test"}
@@ -42,6 +43,7 @@ func TestProcessSignedScript(t *testing.T) {
 				VerifyYAML:               &shouldVerifyYaml,
 				TemporaryWorkerDirectory: &temporaryWorkerDirectory,
 				Env:                      &envMap,
+				ScriptLogLevel:           &scriptLogLevel,
 			}
 
 			defer os.RemoveAll(temporaryWorkerDirectory)
