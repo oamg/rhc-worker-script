@@ -72,8 +72,7 @@ func verifyYamlFile(yamlData []byte) bool {
 	return true
 }
 
-func setEnvVariablesForCommand(cmd *exec.Cmd, variables map[string]string) {
-	cmd.Env = os.Environ()
+func setEnvVariablesFromYaml(cmd *exec.Cmd, variables map[string]string) {
 	getEnvVarName := func(key string) string {
 		return fmt.Sprintf("RHC_WORKER_%s", strings.ToUpper(key))
 	}
@@ -83,6 +82,12 @@ func setEnvVariablesForCommand(cmd *exec.Cmd, variables map[string]string) {
 		cmd.Env = append(cmd.Env, envVarSetString)
 		log.Infoln("Successfully set env variable ", prefixedKey)
 	}
+}
+
+func setLogLevelForSciptExecution(cmd *exec.Cmd) {
+	envLogLevel := fmt.Sprintf("LOG_LEVEL=%s", log.FormatLevel(log.CurrentLevel()))
+	cmd.Env = append(cmd.Env, envLogLevel)
+	log.Infoln("Successfully set env variable LOG_LEVEL to ", log.FormatLevel(log.CurrentLevel()))
 }
 
 // Parses given yaml data.
@@ -125,7 +130,9 @@ func processSignedScript(incomingContent []byte) string {
 	// Execute script
 	log.Infoln("Executing script...")
 	cmd := exec.Command(yamlContent.Vars.Interpreter, scriptFileName) //nolint:gosec
-	setEnvVariablesForCommand(cmd, yamlContent.Vars.ContentVars)
+	cmd.Env = os.Environ()
+	setEnvVariablesFromYaml(cmd, yamlContent.Vars.ContentVars)
+	setLogLevelForSciptExecution(cmd)
 
 	out, err := cmd.CombinedOutput()
 	if err != nil {

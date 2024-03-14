@@ -1,9 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"testing"
+
+	"git.sr.ht/~spc/go-log"
 )
 
 func TestProcessSignedScript(t *testing.T) {
@@ -121,6 +124,40 @@ func areStringSlicesSubset(subset, full []string) bool {
 	return true
 }
 
+func TestSetLogLevelForScriptExecution(t *testing.T) {
+	testCases := []struct {
+		name      string
+		variables map[string]string
+		expected  []string
+	}{
+		{
+			name: "SettingVariables",
+			expected: []string{
+				fmt.Sprintf("LOG_LEVEL=%s", log.FormatLevel(log.CurrentLevel())),
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			originalEnv := os.Environ()
+			// Create the first dummy command
+			cmd := exec.Command("echo", "Hello, World!")
+
+			// Call the functions to set env variables for the commands
+			setLogLevelForSciptExecution(cmd)
+
+			if !areStringSlicesSubset(originalEnv, os.Environ()) {
+				t.Error("Global environment variables have been modified.")
+			}
+
+			if !areStringSlicesSubset(cmd.Env, append(os.Environ(), tc.expected...)) {
+				t.Errorf("Command's environment variables are incorrect. Got: %v, Expected: %v", cmd.Env, append(os.Environ(), tc.expected...))
+			}
+		})
+	}
+}
+
 func TestSetEnvVariablesForCommand(t *testing.T) {
 	testCases := []struct {
 		name                string
@@ -161,8 +198,8 @@ func TestSetEnvVariablesForCommand(t *testing.T) {
 			anotherCmd := exec.Command("echo", "Bye, World!")
 
 			// Call the functions to set env variables for the commands
-			setEnvVariablesForCommand(cmd, tc.variables)
-			setEnvVariablesForCommand(anotherCmd, tc.anotherCmdVariables)
+			setEnvVariablesFromYaml(cmd, tc.variables)
+			setEnvVariablesFromYaml(anotherCmd, tc.anotherCmdVariables)
 
 			// Check if the global environment variables are unchanged
 			if !areStringSlicesSubset(originalEnv, os.Environ()) {
