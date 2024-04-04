@@ -6,3 +6,9 @@ verify_yaml: false
 
 # temporary directory in which the temporary script will be placed and executed.
 temporary_worker_directory: "/var/lib/rhc-worker-script"
+
+env:
+  # environment variables to be set for the script
+  FOO: "some-string-value"
+  BAR: "other-string-value"
+  # ...

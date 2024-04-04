@@ -23,7 +23,7 @@ func TestProcessSignedScript(t *testing.T) {
 			name:           "verification disabled, yaml data supplied = non-empty output",
 			verifyYAML:     false,
 			yamlData:       ExampleYamlData,
-			expectedResult: "Hello World!\n",
+			expectedResult: "Hello World Test!\n",
 		},
 		{
 			name:           "verification enabled, invalid signature = error msg returned",
@@ -37,9 +37,11 @@ func TestProcessSignedScript(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			shouldVerifyYaml := tc.verifyYAML
 			temporaryWorkerDirectory := t.TempDir()
+			envMap := map[string]string{"NAME": "Test"}
 			config = &Config{
 				VerifyYAML:               &shouldVerifyYaml,
 				TemporaryWorkerDirectory: &temporaryWorkerDirectory,
+				Env:                      &envMap,
 			}
 
 			defer os.RemoveAll(temporaryWorkerDirectory)
