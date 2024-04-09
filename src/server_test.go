@@ -98,7 +98,7 @@ func TestProcessData(t *testing.T) {
 		{
 			name:                  "Expected data are present in result data",
 			yamlData:              ExampleYamlData,
-			expectedOutput:        "Hello World!",
+			expectedOutput:        "Hello World Test!",
 			expectedDirective:     "bar",
 			expectedReturnContent: "foo",
 		},
@@ -117,6 +117,7 @@ func TestProcessData(t *testing.T) {
 			config = &Config{
 				VerifyYAML:               &shouldVerifyYaml,
 				TemporaryWorkerDirectory: &temporaryWorkerDirectory,
+				Env:                      &map[string]string{"NAME": "Test"},
 			}
 
 			returnURL := "bar"

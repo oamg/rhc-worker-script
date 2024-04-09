@@ -154,12 +154,17 @@ func boolPtr(b bool) *bool {
 	return &b
 }
 
+func mapStrPtr(m map[string]string) *map[string]string {
+	return &m
+}
+
 // Test YAML data
 const validYAMLData = `
 directive: "rhc-worker-script"
 verify_yaml: true
-verify_yaml_version_check: true
 temporary_worker_directory: "/var/lib/rhc-worker-script"
+env:
+  ENV_VAR1: "value1"
 `
 
 const validYAMLDataMissingValues = `
@@ -171,6 +176,7 @@ func TestLoadConfigOrDefault(t *testing.T) {
 		Directive:                strPtr("rhc-worker-script"),
 		VerifyYAML:               boolPtr(true),
 		TemporaryWorkerDirectory: strPtr("/var/lib/rhc-worker-script"),
+		Env:                      mapStrPtr(map[string]string{"ENV_VAR1": "value1"}),
 	}
 
 	testCases := []struct {
@@ -236,13 +242,13 @@ func TestSetDefaultValues(t *testing.T) {
 	}{
 		{
 			name: "test default values",
-			args: args{config: &Config{nil, nil, nil}},
-			want: args{config: &Config{strPtr("rhc-worker-script"), boolPtr(true), strPtr("/var/lib/rhc-worker-script")}},
+			args: args{config: &Config{nil, nil, nil, nil}},
+			want: args{config: &Config{strPtr("rhc-worker-script"), boolPtr(true), strPtr("/var/lib/rhc-worker-script"), mapStrPtr(map[string]string{})}},
 		},
 		{
 			name: "test non default values",
-			args: args{config: &Config{strPtr("rhc-worker-script"), boolPtr(true), strPtr("/var/lib/rhc-worker-script")}},
-			want: args{config: &Config{strPtr("rhc-worker-script"), boolPtr(true), strPtr("/var/lib/rhc-worker-script")}},
+			args: args{config: &Config{strPtr("rhc-worker-script"), boolPtr(true), strPtr("/var/lib/rhc-worker-script"), mapStrPtr(map[string]string{"ENV_VAR1": "value1"})}},
+			want: args{config: &Config{strPtr("rhc-worker-script"), boolPtr(true), strPtr("/var/lib/rhc-worker-script"), mapStrPtr(map[string]string{"ENV_VAR1": "value1"})}},
 		},
 	}
 	for _, tt := range tests {

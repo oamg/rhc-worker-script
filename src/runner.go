@@ -73,7 +73,6 @@ func verifyYamlFile(yamlData []byte) bool {
 }
 
 func setEnvVariablesForCommand(cmd *exec.Cmd, variables map[string]string) {
-	cmd.Env = os.Environ()
 	getEnvVarName := func(key string) string {
 		return fmt.Sprintf("RHC_WORKER_%s", strings.ToUpper(key))
 	}
@@ -125,7 +124,15 @@ func processSignedScript(incomingContent []byte) string {
 	// Execute script
 	log.Infoln("Executing script...")
 	cmd := exec.Command(yamlContent.Vars.Interpreter, scriptFileName) //nolint:gosec
+	cmd.Env = os.Environ()
+
+	// Set env vars from yaml envelope
 	setEnvVariablesForCommand(cmd, yamlContent.Vars.ContentVars)
+
+	// Set env vars from config
+	if config.Env != nil {
+		setEnvVariablesForCommand(cmd, *config.Env)
+	}
 
 	out, err := cmd.CombinedOutput()
 	if err != nil {

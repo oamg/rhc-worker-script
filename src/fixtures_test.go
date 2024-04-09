@@ -10,7 +10,7 @@ var ExampleYamlData = []byte(
     interpreter: /bin/bash
     content: |
         #!/bin/sh
-        echo "$RHC_WORKER_FOO $RHC_WORKER_BAR!"
+        echo "$RHC_WORKER_FOO $RHC_WORKER_BAR $RHC_WORKER_NAME!"
     content_vars:
         FOO: Hello
         BAR: World`)

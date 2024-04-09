@@ -93,11 +93,12 @@ func constructMetadata(receivedMetadata map[string]string, contentType string) m
 	return ourMetadata
 }
 
-// Struc used fro worker global config
+// Struct used for worker global config
 type Config struct {
-	Directive                *string `yaml:"directive,omitempty"`
-	VerifyYAML               *bool   `yaml:"verify_yaml,omitempty"`
-	TemporaryWorkerDirectory *string `yaml:"temporary_worker_directory,omitempty"`
+	Directive                *string            `yaml:"directive,omitempty"`
+	VerifyYAML               *bool              `yaml:"verify_yaml,omitempty"`
+	TemporaryWorkerDirectory *string            `yaml:"temporary_worker_directory,omitempty"`
+	Env                      *map[string]string `yaml:"env,omitempty"`
 }
 
 // Set default values for the Config struct
@@ -119,6 +120,12 @@ func setDefaultValues(config *Config) {
 		defaultTemporaryWorkerDirectoryValue := "/var/lib/rhc-worker-script"
 		log.Infof("config 'temporary_worker_directory' value is empty default value (%s) will be used", defaultTemporaryWorkerDirectoryValue)
 		config.TemporaryWorkerDirectory = &defaultTemporaryWorkerDirectoryValue
+	}
+
+	if config.Env == nil {
+		defaultEnvMap := map[string]string{}
+		log.Infof("config 'env' value is empty default value (%s) will be used", defaultEnvMap)
+		config.Env = &defaultEnvMap
 	}
 }
 
