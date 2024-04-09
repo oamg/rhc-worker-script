@@ -124,7 +124,7 @@ func setDefaultValues(config *Config) {
 
 	if config.Env == nil {
 		defaultEnvMap := map[string]string{}
-		log.Infof("config 'temporary_worker_directory' value is empty default value (%s) will be used", defaultEnvMap)
+		log.Infof("config 'env' value is empty default value (%s) will be used", defaultEnvMap)
 		config.Env = &defaultEnvMap
 	}
 }
