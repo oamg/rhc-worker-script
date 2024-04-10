@@ -20,7 +20,7 @@
 %global use_go_toolset_1_19 0%{?rhel} == 7 && !%{defined centos}
 
 Name:           %{repo_name}
-Version:        0.6
+Version:        0.7
 Release:        1%{?dist}
 Summary:        Worker executing scripts on hosts managed by Red Hat Insights
 
@@ -84,6 +84,9 @@ EOF
 %config %{rhc_worker_conf_dir}/rhc-worker-script.yml
 
 %changelog
+
+* Wed Apr 10 2024 Rodolfo Olivieri <rolivier@redhat.com> 0.7-1
+- Load env vars from worker config file into script execution env
 
 * Wed Feb 28 2024 Rodolfo Olivieri <rolivier@redhat.com> 0.6-1
 - Fix grpc to newest v1.59.x version

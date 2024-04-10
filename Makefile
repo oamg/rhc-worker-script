@@ -11,7 +11,7 @@
 	coverage-html
 
 # Project constants
-VERSION ?= 0.6
+VERSION ?= 0.7
 PKGNAME ?= rhc-worker-script
 GO_SOURCES := $(wildcard src/*.go)
 PYTHON ?= python3
