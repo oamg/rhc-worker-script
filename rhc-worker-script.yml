@@ -12,3 +12,6 @@ env:
   FOO: "some-string-value"
   BAR: "other-string-value"
   # ...
+
+# Script log level
+script_log_level: "info"

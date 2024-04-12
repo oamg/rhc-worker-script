@@ -112,12 +112,14 @@ func TestProcessData(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			scriptLogLevel := "info"
 			shouldVerifyYaml := false
 			temporaryWorkerDirectory := t.TempDir()
 			config = &Config{
 				VerifyYAML:               &shouldVerifyYaml,
 				TemporaryWorkerDirectory: &temporaryWorkerDirectory,
 				Env:                      &map[string]string{"NAME": "Test"},
+				ScriptLogLevel:           &scriptLogLevel,
 			}
 
 			returnURL := "bar"

@@ -242,13 +242,13 @@ func TestSetDefaultValues(t *testing.T) {
 	}{
 		{
 			name: "test default values",
-			args: args{config: &Config{nil, nil, nil, nil}},
-			want: args{config: &Config{strPtr("rhc-worker-script"), boolPtr(true), strPtr("/var/lib/rhc-worker-script"), mapStrPtr(map[string]string{})}},
+			args: args{config: &Config{nil, nil, nil, nil, nil}},
+			want: args{config: &Config{strPtr("rhc-worker-script"), boolPtr(true), strPtr("/var/lib/rhc-worker-script"), mapStrPtr(map[string]string{}), strPtr("INFO")}},
 		},
 		{
 			name: "test non default values",
-			args: args{config: &Config{strPtr("rhc-worker-script"), boolPtr(true), strPtr("/var/lib/rhc-worker-script"), mapStrPtr(map[string]string{"ENV_VAR1": "value1"})}},
-			want: args{config: &Config{strPtr("rhc-worker-script"), boolPtr(true), strPtr("/var/lib/rhc-worker-script"), mapStrPtr(map[string]string{"ENV_VAR1": "value1"})}},
+			args: args{config: &Config{strPtr("rhc-worker-script"), boolPtr(true), strPtr("/var/lib/rhc-worker-script"), mapStrPtr(map[string]string{"ENV_VAR1": "value1"}), strPtr("INFO")}},
+			want: args{config: &Config{strPtr("rhc-worker-script"), boolPtr(true), strPtr("/var/lib/rhc-worker-script"), mapStrPtr(map[string]string{"ENV_VAR1": "value1"}), strPtr("INFO")}},
 		},
 	}
 	for _, tt := range tests {

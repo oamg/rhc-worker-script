@@ -80,7 +80,7 @@ func setEnvVariablesForCommand(cmd *exec.Cmd, variables map[string]string) {
 		prefixedKey := getEnvVarName(key)
 		envVarSetString := fmt.Sprintf("%s=%s", prefixedKey, value)
 		cmd.Env = append(cmd.Env, envVarSetString)
-		log.Infoln("Successfully set env variable ", prefixedKey)
+		log.Infoln("Successfully set env variable", prefixedKey)
 	}
 }
 
@@ -126,8 +126,11 @@ func processSignedScript(incomingContent []byte) string {
 	cmd := exec.Command(yamlContent.Vars.Interpreter, scriptFileName) //nolint:gosec
 	cmd.Env = os.Environ()
 
+	variables := yamlContent.Vars.ContentVars
+	variables["LOG_LEVEL"] = *config.ScriptLogLevel
+
 	// Set env vars from yaml envelope
-	setEnvVariablesForCommand(cmd, yamlContent.Vars.ContentVars)
+	setEnvVariablesForCommand(cmd, variables)
 
 	// Set env vars from config
 	if config.Env != nil {

@@ -99,6 +99,7 @@ type Config struct {
 	VerifyYAML               *bool              `yaml:"verify_yaml,omitempty"`
 	TemporaryWorkerDirectory *string            `yaml:"temporary_worker_directory,omitempty"`
 	Env                      *map[string]string `yaml:"env,omitempty"`
+	ScriptLogLevel           *string            `yaml:"script_log_level"`
 }
 
 // Set default values for the Config struct
@@ -126,6 +127,16 @@ func setDefaultValues(config *Config) {
 		defaultEnvMap := map[string]string{}
 		log.Infof("config 'env' value is empty default value (%s) will be used", defaultEnvMap)
 		config.Env = &defaultEnvMap
+	}
+
+	if config.ScriptLogLevel == nil {
+		defaultLogLevel := "info"
+		yggdLogLevel, ok := os.LookupEnv("YGG_LOG_LEVEL")
+		if ok {
+			config.ScriptLogLevel = &yggdLogLevel
+		} else {
+			config.ScriptLogLevel = &defaultLogLevel
+		}
 	}
 }
 
