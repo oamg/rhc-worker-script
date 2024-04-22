@@ -10,36 +10,48 @@
 	coverage \
 	coverage-html
 
-# Project constants
+# Build constants
 VERSION ?= 0.7
 PKGNAME ?= rhc-worker-script
 GO_SOURCES := $(wildcard src/*.go)
-PYTHON ?= python3
-PIP ?= pip3
-VENV ?= .venv3
-PRE_COMMIT ?= pre-commit
 GO_VERSION ?= 1.19
-CLIENT_ID ?= 00000000-0000-0000-0000-0000000000000
-SERVED_FILENAME ?= example_bash.yml
+
+BUILDFLAGS ?=
+LDFLAGS ?=
+ifeq ($(shell find . -name vendor), ./vendor)
+BUILDFLAGS += -mod=vendor
+endif
+
+# -----------------------------------------------------------------------------
+
+# Development constants
+_PYTHON ?= python3
+_PIP ?= pip3
+_VENV ?= .venv3
+_PRE_COMMIT ?= pre-commit
+_CLIENT_ID ?= 00000000-0000-0000-0000-0000000000000
+_SERVED_FILENAME ?= example_bash.yml
 
 ifdef KEEP_TEST_CONTAINER
-	CONTAINER_RM =
+	_CONTAINER_RM =
 else
-	CONTAINER_RM = --rm
+	_CONTAINER_RM = --rm
 endif
+
+# -----------------------------------------------------------------------------
 
 all: clean build
 
 install: .install .pre-commit
 
 .install:
-	virtualenv --system-site-packages --python $(PYTHON) $(VENV); \
-	. $(VENV)/bin/activate; \
-	$(PIP) install --upgrade -r ./development/python/requirements.txt; \
+	virtualenv --system-site-packages --python $(_PYTHON) $(_VENV); \
+	. $(_VENV)/bin/activate; \
+	$(_PIP) install --upgrade -r ./development/python/requirements.txt; \
 	touch $@
 
 .pre-commit:
-	$(PRE_COMMIT) install --install-hooks
+	$(_PRE_COMMIT) install --install-hooks
 	touch $@
 
 clean:
@@ -47,7 +59,7 @@ clean:
 
 build: $(GO_SOURCES)
 	mkdir -p build
-	CGO_ENABLED=0 go build -o build/rhc-script-worker $^
+	go build $(BUILDFLAGS) -ldflags "$(LDFLAGS)" -o build/rhc-script-worker $^
 
 distribution-tarball:
 	go mod vendor
@@ -71,7 +83,7 @@ test:
 	go test -coverprofile=coverage.out ./...
 
 test-container:
-	podman run --replace --name go-test-container $(CONTAINER_RM) -v $(shell pwd):/app:Z -w /app docker.io/golang:$(GO_VERSION) make test
+	podman run --replace --name go-test-container $(_CONTAINER_RM) -v $(shell pwd):/app:Z -w /app docker.io/golang:$(GO_VERSION) make test
 
 coverage: test
 	go tool cover -func=coverage.out
@@ -80,7 +92,7 @@ coverage-html: test
 	go tool cover -html=coverage.out
 
 publish:
-	. $(VENV)/bin/activate; python development/python/mqtt_publish.py $(CLIENT_ID) $(SERVED_FILENAME)
+	. $(_VENV)/bin/activate; python development/python/mqtt_publish.py $(_CLIENT_ID) $(_SERVED_FILENAME)
 
 development:
 	@podman-compose -f development/podman-compose.yml down
