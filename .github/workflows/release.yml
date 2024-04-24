@@ -11,6 +11,7 @@ permissions:
 jobs:
   generate:
     name: Generate cross-platform builds
+    if: always() && github.repository == 'oamg/rhc-worker-script'
     runs-on: ubuntu-latest
     steps:
       - uses: olegtarasov/get-tag@v2.1

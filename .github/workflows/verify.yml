@@ -9,6 +9,7 @@ on:
 jobs:
   tests:
     name: "Lint + Tests + Coverage"
+    if: always() && github.repository == 'oamg/rhc-worker-script'
     runs-on: ubuntu-latest
     strategy:
       matrix:
