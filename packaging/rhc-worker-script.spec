@@ -3,6 +3,11 @@
 
 %define debug_package %{nil}
 
+# Flags for building the package
+%global buildflags -buildmode pie -compiler gc -a -v -x
+%global goldflags %{expand:-linkmode=external -compressdwarf=false -B 0x$(head -c20 /dev/urandom|od -An -tx1|tr -d ' \\n') -extldflags '%__global_ldflags'}
+
+# Package constants
 %global repo_orgname oamg
 %global repo_name rhc-worker-script
 %global binary_name rhc-script-worker
@@ -10,7 +15,8 @@
 %{!?_root_sysconfdir:%global _root_sysconfdir %{_sysconfdir}}
 %global rhc_worker_conf_dir %{_root_sysconfdir}/rhc/workers
 
-%define gobuild(o:) env GO111MODULE=off go build -buildmode pie -compiler gc -tags="rpm_crashtraceback ${BUILDTAGS:-}" -ldflags "${LDFLAGS:-} -linkmode=external -B 0x$(head -c20 /dev/urandom|od -An -tx1|tr -d ' \\n') -extldflags '-Wl,-z,relro -Wl,-z,now -specs=/usr/lib/rpm/redhat/redhat-hardened-ld '" -a -v %{?**}
+# Go toolset configuration
+%global go_toolset_version 1.19
 
 # EL7 doesn't define go_arches (it is available in go-srpm-macros which is EL8+)
 %if !%{defined go_arches}
@@ -29,8 +35,9 @@ URL:            https://github.com/%{repo_orgname}/%{repo_name}
 Source0:        %{url}/releases/download/v%{version}/%{name}-%{version}.tar.gz
 ExclusiveArch:  %{go_arches}
 
+BuildRequires: git
 %if %{use_go_toolset_1_19}
-BuildRequires:  go-toolset-1.19-golang
+BuildRequires:  go-toolset-%{go_toolset_version}-golang
 %else
 BuildRequires:  golang
 %endif
@@ -44,38 +51,42 @@ managed by Red Hat Insights.
 %setup -q
 
 %build
-mkdir -p _gopath/src
-ln -fs $(pwd)/src _gopath/src/%{binary_name}-%{version}
-ln -fs $(pwd)/vendor _gopath/src/%{binary_name}-%{version}/vendor
-export GOPATH=$(pwd)/_gopath
-pushd _gopath/src/%{binary_name}-%{version}
-%if %{use_go_toolset_1_19}
-scl enable go-toolset-1.19 -- %{gobuild}
-%else
-%{gobuild}
-%endif
-strip %{binary_name}-%{version}
-popd
+export CGO_CPPFLAGS="-D_FORTIFY_SOURCE=2 -fstack-protector-all"
+export BUILDFLAGS="%{buildflags}"
+export LDFLAGS="%{goldflags}"
 
+%if %{use_go_toolset_1_19}
+scl enable go-toolset-%{go_toolset_version} -- make build
+%else
+make build
+%endif
 
 %install
 # Create a temporary directory /var/lib/rhc-worker-script - used mainly for storing temporary files
 install -d %{buildroot}%{_sharedstatedir}/%{binary_name}/
 
-install -D -m 755 _gopath/src/%{binary_name}-%{version}/%{binary_name}-%{version} %{buildroot}%{rhc_libexecdir}/%{binary_name}
+install -D -m 755 build/%{binary_name} %{buildroot}%{rhc_libexecdir}/%{binary_name}
 install -D -d -m 755 %{buildroot}%{rhc_worker_conf_dir}
 
 cat <<EOF >%{buildroot}%{rhc_worker_conf_dir}/rhc-worker-script.yml
-# recipient directive to register with dispatcher
+# Recipient directive to register with dispatcher
 directive: "%{name}"
 
-# whether to verify incoming yaml files
+# Whether to verify incoming yaml files
 verify_yaml: true
 
-# temporary directory in which the temporary script will be placed and executed.
+# Temporary directory in which the temporary script will be placed and executed.
 temporary_worker_directory: "/var/lib/rhc-worker-script"
-EOF
 
+# Pass environment variables to the script being executed
+# env:
+  # environment variables to be set for the script
+  # FOO: "some-string-value"
+  # BAR: "other-string-value"
+
+# Log level that will be sent to the script
+script_log_level: "info"
+EOF
 
 %files
 %{rhc_libexecdir}/%{binary_name}
