@@ -11,7 +11,7 @@
 	coverage-html
 
 # Build constants
-VERSION ?= 0.7
+VERSION ?= 0.8
 PKGNAME ?= rhc-worker-script
 GO_SOURCES := $(wildcard src/*.go)
 GO_VERSION ?= 1.19
