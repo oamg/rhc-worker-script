@@ -60,7 +60,7 @@ services:
       - worker
 
   ingress:
-    image: quay.io/cloudservices/insights-ingress:latest
+    image: quay.io/redhat-services-prod/hcc-pipeline-tenant/insights-ingress-go:latest
     ports:
       - 3000:3000
     mem_limit: 512M
