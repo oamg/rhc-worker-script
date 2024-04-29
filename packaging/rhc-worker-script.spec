@@ -103,6 +103,7 @@ EOF
 
 * Wed Apr 10 2024 Rodolfo Olivieri <rolivier@redhat.com> 0.7-1
 - Load env vars from worker config file into script execution env
+- Bump google.golang.org/protobuf from 1.31.0 to 1.33.0
 
 * Wed Feb 28 2024 Rodolfo Olivieri <rolivier@redhat.com> 0.6-1
 - Fix grpc to newest v1.59.x version
