@@ -59,7 +59,7 @@ clean:
 
 build: $(GO_SOURCES)
 	mkdir -p build
-	go build $(BUILDFLAGS) -ldflags "$(LDFLAGS)" -o build/rhc-script-worker $^
+	CGO_ENABLED=0 go build $(BUILDFLAGS) -ldflags "$(LDFLAGS)" -o build/rhc-script-worker $^
 
 distribution-tarball:
 	go mod vendor

@@ -4,3 +4,4 @@ build/*
 .pre-commit
 development/nginx/data/*
 coverage.out
+vendor

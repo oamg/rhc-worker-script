@@ -1,51 +1,52 @@
 # Specfile based and updated from
 # https://github.com/theforeman/foreman-packaging/blob/rpm/develop/packages/client/foreman_ygg_worker/foreman_ygg_worker.spec
 
+# Disable debug information for the package
 %define debug_package %{nil}
 
 # Flags for building the package
 %global buildflags -buildmode pie -compiler gc -a -v -x
-%global goldflags %{expand:-linkmode=external -compressdwarf=false -B 0x$(head -c20 /dev/urandom|od -An -tx1|tr -d ' \\n') -extldflags '%__global_ldflags'}
+%global goldflags  %{expand:-linkmode=external -compressdwarf=false -B 0x$(head -c20 /dev/urandom|od -An -tx1|tr -d ' \\n') -extldflags '%__global_ldflags'}
 
 # Package constants
-%global repo_orgname oamg
-%global repo_name rhc-worker-script
-%global binary_name rhc-script-worker
-%global rhc_libexecdir %{_libexecdir}/rhc
 %{!?_root_sysconfdir:%global _root_sysconfdir %{_sysconfdir}}
+%global version             0.8
+%global repo_orgname        oamg
+%global repo_name           rhc-worker-script
+%global binary_name         rhc-script-worker
+%global rhc_libexecdir      %{_libexecdir}/rhc
 %global rhc_worker_conf_dir %{_root_sysconfdir}/rhc/workers
+%global tag                 %{version}
 
-# Go toolset configuration
-%global go_toolset_version 1.19
+# Go constants
+%global goipath             github.com/%{repo_orgname}/%{repo_name}
+%global godocs              CONTRIBUTING.md README.md
+%global golicenses          LICENSE
+%global go_toolset_version  1.21
 
-# EL7 doesn't define go_arches (it is available in go-srpm-macros which is EL8+)
-%if !%{defined go_arches}
-%define go_arches x86_64
-%endif
+%global use_go_toolset 0%{?rhel} == 8 && !%{defined centos}
 
-%global use_go_toolset_1_19 0%{?rhel} == 7 && !%{defined centos}
 
 Name:           %{repo_name}
-Version:        0.8
+Version:        %{version}
 Release:        1%{?dist}
 Summary:        Worker executing scripts on hosts managed by Red Hat Insights
 
 License:        GPLv3+
 URL:            https://github.com/%{repo_orgname}/%{repo_name}
-Source0:        %{url}/releases/download/v%{version}/%{name}-%{version}.tar.gz
-ExclusiveArch:  %{go_arches}
+Source:         %{url}/releases/download/v%{version}/%{name}-%{version}.tar.gz
+ExclusiveArch:  x86_64
 
 BuildRequires: git
-%if %{use_go_toolset_1_19}
-BuildRequires:  go-toolset-%{go_toolset_version}-golang
-%else
-BuildRequires:  golang
-%endif
+BuildRequires:  golang >= 1.20
+
 Requires:       rhc
 
 %description
 Remote Host Configuration (rhc) worker for executing scripts on hosts
 managed by Red Hat Insights.
+
+%gopkg
 
 %prep
 %setup -q
@@ -55,11 +56,7 @@ export CGO_CPPFLAGS="-D_FORTIFY_SOURCE=2 -fstack-protector-all"
 export BUILDFLAGS="%{buildflags}"
 export LDFLAGS="%{goldflags}"
 
-%if %{use_go_toolset_1_19}
-scl enable go-toolset-%{go_toolset_version} -- make build
-%else
 make build
-%endif
 
 %install
 # Create a temporary directory /var/lib/rhc-worker-script - used mainly for storing temporary files
@@ -91,7 +88,10 @@ EOF
 %files
 %{rhc_libexecdir}/%{binary_name}
 %license LICENSE
-%doc README.md
+%if %{defined rhel}
+%license vendor/modules.txt
+%endif
+%doc CONTRIBUTING.md README.md
 %config %{rhc_worker_conf_dir}/rhc-worker-script.yml
 
 %changelog
