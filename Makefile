@@ -14,7 +14,7 @@
 VERSION ?= 0.8
 PKGNAME ?= rhc-worker-script
 GO_SOURCES := $(wildcard src/*.go)
-GO_VERSION ?= 1.19
+GO_VERSION ?= 1.21
 
 BUILDFLAGS ?=
 LDFLAGS ?=
