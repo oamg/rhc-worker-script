@@ -1,6 +1,6 @@
 module github.com/oamg/rhc-worker-script
 
-go 1.21
+go 1.21.0
 
 require (
 	git.sr.ht/~spc/go-log v0.1.1
