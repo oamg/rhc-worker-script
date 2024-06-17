@@ -16,14 +16,14 @@
 %global rhc_worker_conf_dir %{_root_sysconfdir}/rhc/workers
 
 # Go toolset configuration
-%global go_toolset_version 1.19
+%global go_toolset_version 1.21
 
 # EL7 doesn't define go_arches (it is available in go-srpm-macros which is EL8+)
 %if !%{defined go_arches}
 %define go_arches x86_64
 %endif
 
-%global use_go_toolset_1_19 0%{?rhel} == 7 && !%{defined centos}
+%global use_go_toolset_1_21 0%{?rhel} == 7 && !%{defined centos}
 
 Name:           %{repo_name}
 Version:        0.8
@@ -36,7 +36,7 @@ Source0:        %{url}/releases/download/v%{version}/%{name}-%{version}.tar.gz
 ExclusiveArch:  %{go_arches}
 
 BuildRequires: git
-%if %{use_go_toolset_1_19}
+%if %{use_go_toolset_1_21}
 BuildRequires:  go-toolset-%{go_toolset_version}-golang
 %else
 BuildRequires:  golang
@@ -55,7 +55,7 @@ export CGO_CPPFLAGS="-D_FORTIFY_SOURCE=2 -fstack-protector-all"
 export BUILDFLAGS="%{buildflags}"
 export LDFLAGS="%{goldflags}"
 
-%if %{use_go_toolset_1_19}
+%if %{use_go_toolset_1_21}
 scl enable go-toolset-%{go_toolset_version} -- make build
 %else
 make build
