@@ -53,7 +53,7 @@ func processData(d *pb.Data) *pb.Data {
 // Sends data back to dispatcher
 func sendDataToDispatcher(data *pb.Data) *pb.Data {
 	// Dial the Dispatcher and call "Finish"
-	conn, err := grpc.Dial(yggdDispatchSocketAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(yggdDispatchSocketAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Error(err)
 	}

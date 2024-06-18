@@ -39,7 +39,7 @@ func main() {
 	defer os.Remove(*config.TemporaryWorkerDirectory)
 
 	// Dial the dispatcher on its well-known address.
-	conn, err := grpc.Dial(
+	conn, err := grpc.NewClient(
 		yggdDispatchSocketAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatal(err)
