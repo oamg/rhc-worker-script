@@ -1,12 +1,9 @@
 .PHONY: \
-	install \
 	clean \
 	build \
 	distribution-tarball \
 	test \
 	test-container \
-	publish \
-	development \
 	coverage \
 	coverage-html
 
@@ -22,16 +19,6 @@ ifeq ($(shell find . -name vendor), ./vendor)
 BUILDFLAGS += -mod=vendor
 endif
 
-# -----------------------------------------------------------------------------
-
-# Development constants
-_PYTHON ?= python3
-_PIP ?= pip3
-_VENV ?= .venv3
-_PRE_COMMIT ?= pre-commit
-_CLIENT_ID ?= 00000000-0000-0000-0000-0000000000000
-_SERVED_FILENAME ?= example_bash.yml
-
 ifdef KEEP_TEST_CONTAINER
 	_CONTAINER_RM =
 else
@@ -40,26 +27,21 @@ endif
 
 # -----------------------------------------------------------------------------
 
-all: clean build
-
-install: .install .pre-commit
-
-.install:
-	virtualenv --system-site-packages --python $(_PYTHON) $(_VENV); \
-	. $(_VENV)/bin/activate; \
-	$(_PIP) install --upgrade -r ./development/python/requirements.txt; \
-	touch $@
+all: clean .pre-commit build
 
 .pre-commit:
-	$(_PRE_COMMIT) install --install-hooks
+	pre-commit install --install-hooks
 	touch $@
 
 clean:
-	rm -rf build
+	@rm -rf build/
+	@find . -name '.pre-commit' -exec rm -fr {} +
+	@find . -name 'coverage.out' -exec rm -rf {} +
+
 
 build: $(GO_SOURCES)
 	mkdir -p build
-	go build $(BUILDFLAGS) -ldflags "$(LDFLAGS)" -o build/rhc-script-worker $^
+	CGO_ENABLED=0 go build $(BUILDFLAGS) -ldflags "$(LDFLAGS)" -o build/rhc-script-worker $^
 
 distribution-tarball:
 	go mod vendor
@@ -90,10 +72,3 @@ coverage: test
 
 coverage-html: test
 	go tool cover -html=coverage.out
-
-publish:
-	. $(_VENV)/bin/activate; python development/python/mqtt_publish.py $(_CLIENT_ID) $(_SERVED_FILENAME)
-
-development:
-	@podman-compose -f development/podman-compose.yml down
-	podman-compose -f development/podman-compose.yml up -d
