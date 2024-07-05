@@ -4,8 +4,7 @@
 %define debug_package %{nil}
 
 # Flags for building the package
-%global buildflags -buildmode pie -compiler gc -a -v -x
-%global goldflags %{expand:-linkmode=external -compressdwarf=false -B 0x$(head -c20 /dev/urandom|od -An -tx1|tr -d ' \\n') -extldflags '%__global_ldflags'}
+%global buildflags -compiler gc -a -v -x
 
 # Package constants
 %global repo_orgname oamg
@@ -15,11 +14,6 @@
 %{!?_root_sysconfdir:%global _root_sysconfdir %{_sysconfdir}}
 %global rhc_worker_conf_dir %{_root_sysconfdir}/rhc/workers
 
-# EL7 doesn't define go_arches (it is available in go-srpm-macros which is EL8+)
-%if !%{defined go_arches}
-%define go_arches x86_64
-%endif
-
 Name:           %{repo_name}
 Version:        0.9
 Release:        1%{?dist}
@@ -28,7 +22,7 @@ Summary:        Worker executing scripts on hosts managed by Red Hat Insights
 License:        GPLv3+
 URL:            https://github.com/%{repo_orgname}/%{repo_name}
 Source0:        %{url}/releases/download/v%{version}/%{name}-%{version}.tar.gz
-ExclusiveArch:  %{go_arches}
+ExclusiveArch:  x86_64
 
 BuildRequires:  git
 BuildRequires:  golang
@@ -42,9 +36,7 @@ managed by Red Hat Insights.
 %setup -q
 
 %build
-export CGO_CPPFLAGS="-D_FORTIFY_SOURCE=2 -fstack-protector-all"
 export BUILDFLAGS="%{buildflags}"
-export LDFLAGS="%{goldflags}"
 
 make build
 
@@ -82,6 +74,9 @@ EOF
 %config %{rhc_worker_conf_dir}/rhc-worker-script.yml
 
 %changelog
+
+* Tue Jul 02 2024 Rodolfo Olivieri <rolivier@redhat.com> 0.9-5
+- Patch specfile to build with RHEL 8
 
 * Fri Jun 21 2024 Rodolfo Olivieri <rolivier@redhat.com> 0.9-1
 - Update module google.golang.org/grpc to v1.64.0

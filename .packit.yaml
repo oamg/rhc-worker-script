@@ -13,6 +13,7 @@ jobs:
   project: "rhc-worker-script"
   targets:
     - epel-7-x86_64
+    - epel-8-x86_64
   trigger: pull_request
   actions:
     # do not get the version from a tag (git describe) but from the spec file
@@ -28,6 +29,7 @@ jobs:
   project: "rhc-worker-script"
   targets:
     - epel-7-x86_64
+    - epel-8-x86_64
   trigger: commit
   branch: main
   actions:
