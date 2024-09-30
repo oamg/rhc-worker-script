@@ -15,7 +15,7 @@
 %global rhc_worker_conf_dir %{_root_sysconfdir}/rhc/workers
 
 Name:           %{repo_name}
-Version:        0.9
+Version:        0.10
 Release:        1%{?dist}
 Summary:        Worker executing scripts on hosts managed by Red Hat Insights
 
@@ -74,6 +74,10 @@ EOF
 %config %{rhc_worker_conf_dir}/rhc-worker-script.yml
 
 %changelog
+
+* Tue Sep 30 2024 Rodolfo Olivieri <rolivier@redhat.com> 0.10-1
+- Bump google.golang.org/grpc from v1.64.0 to v1.67.0
+- Adressing CVE-2024-24791
 
 * Tue Jul 02 2024 Rodolfo Olivieri <rolivier@redhat.com> 0.9-5
 - Patch specfile to build with RHEL 8
