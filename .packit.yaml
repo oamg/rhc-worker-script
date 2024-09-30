@@ -12,7 +12,6 @@ jobs:
   owner: "@oamg"
   project: "rhc-worker-script"
   targets:
-    - epel-7-x86_64
     - epel-8-x86_64
   trigger: pull_request
   actions:
@@ -28,7 +27,6 @@ jobs:
   owner: "@oamg"
   project: "rhc-worker-script"
   targets:
-    - epel-7-x86_64
     - epel-8-x86_64
   trigger: commit
   branch: main
