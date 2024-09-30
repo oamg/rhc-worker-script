@@ -75,7 +75,7 @@ EOF
 
 %changelog
 
-* Tue Sep 30 2024 Rodolfo Olivieri <rolivier@redhat.com> 0.10-1
+* Mon Sep 30 2024 Rodolfo Olivieri <rolivier@redhat.com> 0.10-1
 - Bump google.golang.org/grpc from v1.64.0 to v1.67.0
 - Adressing CVE-2024-24791
 
