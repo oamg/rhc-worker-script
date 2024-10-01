@@ -6,7 +6,7 @@ require (
 	git.sr.ht/~spc/go-log v0.1.1
 	github.com/google/uuid v1.6.0
 	github.com/redhatinsights/yggdrasil v0.0.0-20210811162724-41397343c25b
-	google.golang.org/grpc v1.67.0
+	google.golang.org/grpc v1.67.1
 	gopkg.in/yaml.v3 v3.0.1
 )
 
