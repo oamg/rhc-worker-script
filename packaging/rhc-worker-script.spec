@@ -17,7 +17,7 @@
 Name:           %{repo_name}
 Version:        0.10
 Release:        1%{?dist}
-Summary:        Worker executing scripts on hosts managed by Red Hat Insights
+Summary:        Worker executing scripts on hosts managed by Red Hat Lightspeed
 
 License:        GPLv3+
 URL:            https://github.com/%{repo_orgname}/%{repo_name}
@@ -30,7 +30,7 @@ Requires:       rhc
 
 %description
 Remote Host Configuration (rhc) worker for executing scripts on hosts
-managed by Red Hat Insights.
+managed by Red Hat Lightspeed.
 
 %prep
 %setup -q

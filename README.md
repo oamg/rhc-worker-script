@@ -5,7 +5,7 @@
 # RHC Worker
 
 Remote Host Configuration (rhc) worker for executing  scripts on hosts managed
-by Red Hat Insights. Interpreter used to execute the script is defined inside
+by Red Hat Lightspeed. Interpreter used to execute the script is defined inside
 the supplied yaml file - served by insights.
 
 - [RHC Worker](#rhc-worker)
@@ -29,8 +29,8 @@ Everything starts when message is sent to rhcd. Worker then:
 6. Sends the stdout wrapped in JSON back to rhcd
 
 Then rhcd sends the message to upload service (with data from worker) in order
-to show the results in Insights UI - our setup for local development simulates
-the upload with minio storage.
+to show the results in Red Hat Lightspeed UI - our setup for local development
+simulates the upload with minio storage.
 
 ## FAQ
 
