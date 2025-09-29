@@ -37,7 +37,7 @@ func writeFileToTemporaryDir(data []byte, temporaryWorkerDirectory string) strin
 	return fileName
 }
 
-// Expected JSON format of message by Insights Upload service (Ingress)
+// Expected JSON format of message by Red Hat Lightspeed Upload service (Ingress)
 type jsonResponseFormat struct {
 	CorrelationID string `json:"correlation_id"`
 	Stdout        string `json:"stdout"`
