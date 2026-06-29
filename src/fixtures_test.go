@@ -1,3 +1,4 @@
+// Package main provides test fixtures shared across test files.
 package main
 
 // Example of incoming YAML data structure for test purposes
