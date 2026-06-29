@@ -12,7 +12,6 @@ linters:
     - staticcheck
     - nilerr
     - revive
-    - typecheck
     - unconvert
     - unparam
     - unused
