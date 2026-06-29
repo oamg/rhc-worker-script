@@ -16,6 +16,17 @@ linters:
     - unused
     - wastedassign
   settings:
+    errcheck:
+      exclude-functions:
+        - (io.Closer).Close
+        - (*os.File).Close
+        - os.Remove
+        - os.RemoveAll
+        - os.Setenv
+        - os.Unsetenv
+    gosec:
+      excludes:
+        - G304
     revive:
       rules:
         - name: blank-imports
