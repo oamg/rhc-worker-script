@@ -20,11 +20,11 @@ jobs:
           tagRegexGroup: 1 # Optional. Default is 1.
 
       - name: Checkout the repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - uses: actions/setup-go@v6
         with:
-          go-version: '1.21'
+          go-version: '1.25'
 
       - name: Generate distribution tarball
         run: |
