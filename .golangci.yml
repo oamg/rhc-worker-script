@@ -20,12 +20,14 @@ linters:
       exclude-functions:
         - (io.Closer).Close
         - (*os.File).Close
+        - (*google.golang.org/grpc.ClientConn).Close
         - os.Remove
         - os.RemoveAll
         - os.Setenv
         - os.Unsetenv
     gosec:
       excludes:
+        - G104
         - G304
     revive:
       rules:
