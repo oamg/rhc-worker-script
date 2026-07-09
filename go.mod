@@ -1,6 +1,6 @@
 module github.com/oamg/rhc-worker-script
 
-go 1.25
+go 1.25.10
 
 require (
 	git.sr.ht/~spc/go-log v0.1.1
@@ -11,10 +11,9 @@ require (
 )
 
 require (
-	github.com/golang/protobuf v1.5.4 // indirect
-	golang.org/x/net v0.48.0 // indirect
-	golang.org/x/sys v0.39.0 // indirect
-	golang.org/x/text v0.32.0 // indirect
+	golang.org/x/net v0.57.0 // indirect
+	golang.org/x/sys v0.47.0 // indirect
+	golang.org/x/text v0.40.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20251202230838-ff82c1b0f217 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
 )
