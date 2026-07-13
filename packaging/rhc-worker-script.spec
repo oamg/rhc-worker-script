@@ -15,7 +15,7 @@
 %global rhc_worker_conf_dir %{_root_sysconfdir}/rhc/workers
 
 Name:           %{repo_name}
-Version:        0.10
+Version:        0.11
 Release:        1%{?dist}
 Summary:        Worker executing scripts on hosts managed by Red Hat Lightspeed
 
@@ -74,6 +74,14 @@ EOF
 %config %{rhc_worker_conf_dir}/rhc-worker-script.yml
 
 %changelog
+* Mon Jul 13 2026 Petr Stodulka <pstodulk@redhat.com> 0.11-1
+- Bump golang to 1.25.10 due to CVEs
+- Bump google.golang.org/grpc from v1.67.0 to v1.79.3
+- Bump golang.org/x/net from v0.28.0 to v0.57.0
+- Bump golang.org/x/sys from v0.24.0 to v0.47.0
+- Bump golang.org/x/text from v0.17 to v0.40.0
+- Bump yggdrasil to v0.0.0-20240326153905-31d0356b6d8e
+- Adressing: CVE-2026-33186, CVE-2026-39821, CVE-2026-25679, CVE-2026-32282, CVE-2026-32283, CVE-2026-32280, CVE-2026-33811
 
 * Mon Sep 30 2024 Rodolfo Olivieri <rolivier@redhat.com> 0.10-1
 - Bump google.golang.org/grpc from v1.64.0 to v1.67.0
